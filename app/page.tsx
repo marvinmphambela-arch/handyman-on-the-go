@@ -11,14 +11,8 @@ const services = [
 
 function BrandMark({ small = false }: { small?: boolean }) {
   return <span className={small ? "brand-mark brand-mark-small" : "brand-mark"} aria-hidden="true">
-    <svg viewBox="0 0 64 64">
-      <circle cx="35" cy="13" r="8" fill="#f3b17d"/><path d="M27 8q8-9 17 0l-1 5H26z" fill="#10283d"/>
-      <path d="m28 23 12-3 9 12-9 8-12-5-8 10-7-5 10-14z" fill="#fff"/>
-      <path d="m38 23 10 4 8 12-7 4-10-9" fill="#f28a32"/><path d="m27 33-8 14-10 3-2-6 9-7 5-11" fill="#f28a32"/>
-      <path d="m32 37-9 13-11 5-3-5 9-9 5-10" fill="#10283d"/><path d="m41 38 8 8 9 2-1 6-13-1-10-9" fill="#10283d"/>
-      <rect x="2" y="39" width="17" height="14" rx="3" fill="#f28a32" stroke="#10283d" strokeWidth="2"/>
-      <path d="M6 39v-4h9v4M8 45h5" fill="none" stroke="#10283d" strokeWidth="2" strokeLinecap="round"/>
-    </svg>
+    <span className="brand-monogram">HGO</span>
+    <span className="brand-underline"/>
   </span>;
 }
 
@@ -38,31 +32,12 @@ export default function Home() {
         <div className="hero-buttons"><a className="btn btn-orange" href="/request">Find a handyman <ArrowRight size={18}/></a><a className="btn btn-outline" href="#handymen">I’m a handyman</a></div>
         <div className="hero-assurance"><span className="assurance-icon"><ShieldCheck size={19}/></span><span><b>Good work starts with a good choice.</b><small>Compare offers. Choose with confidence.</small></span></div>
       </div>
-      <div className="hero-art tradesman-art" aria-label="Illustration of a South African tradesman moving quickly with his toolbox">
-        <div className="art-speed speed-a"/><div className="art-speed speed-b"/><div className="art-speed speed-c"/>
-        <svg className="tradesman-illustration" viewBox="0 0 560 470" role="img" aria-label="Tradesman in navy workwear carrying a toolbox">
-          <ellipse cx="290" cy="426" rx="190" ry="18" fill="#061a2a" opacity=".22"/>
-          <path d="M80 150 185 126M45 190l103-18M72 225l74-10" stroke="#f28a32" strokeWidth="8" strokeLinecap="round"/>
-          <path d="M250 150q45-53 105-10l48 70-47 75-106-20-37-65z" fill="#f28a32"/>
-          <path d="m253 161 91-30 61 76-38 74-95-25-35-65z" fill="#183e5b"/>
-          <path d="m258 166-57 41-54-25-18 20 67 48 81-48" fill="#f0a16d"/>
-          <path d="m154 183-37 5-24-19 8-13 35 11 32-1" fill="#f0a16d"/>
-          <path d="m346 145 39-39 18 8-17 60-33 35" fill="#f0a16d"/><path d="m389 108 15-17 14 8-8 22-16 5" fill="#f0a16d"/>
-          <path d="m267 265-70 79-78 22-10-24 61-43 43-90" fill="#10283d"/><path d="m196 344-10 35-48 23-25-7 10-24 55-27" fill="#f0a16d"/>
-          <path d="m335 265 54 77 65 30-8 25-84-14-72-68" fill="#10283d"/><path d="m454 370 30 10 20 23-8 12-53-5-25-12" fill="#f0a16d"/>
-          <path d="m110 392 53 4 10 16-15 12-77-4-4-10zM430 395l51 5 20 18-9 11-72-7-9-10z" fill="#d98b43"/>
-          <path d="m263 155 32-18 42 10-7 58-56 17-27-32z" fill="#fff"/><path d="m280 155 27 5 19 43-37 17-30-32z" fill="#f28a32"/>
-          <path d="M268 132q-2-39 34-47 33 1 39 35l-15 34-42-1z" fill="#8b563b"/>
-          <path d="M264 112q7-42 47-40 29 3 34 28l-16 6-14-13-39 25z" fill="#10283d"/><path d="M273 91q29-29 64-4l-4 13q-29-12-56 7z" fill="#f28a32"/>
-          <path d="M295 123q11 8 22 0" stroke="#10283d" strokeWidth="3" fill="none" strokeLinecap="round"/><path d="M287 111h3m20-1h3" stroke="#10283d" strokeWidth="4" strokeLinecap="round"/>
-          <path d="m300 137 13 2" stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
-          <path d="m255 227 83 18-9 22-82-19z" fill="#e6a05e"/>
-          <rect x="46" y="251" width="133" height="103" rx="14" fill="#f28a32" stroke="#10283d" strokeWidth="9"/>
-          <path d="M79 250v-17q0-12 13-12h40q13 0 13 12v17" fill="none" stroke="#10283d" strokeWidth="9"/>
-          <path d="M46 284h133M91 284v15h42v-15" fill="none" stroke="#10283d" strokeWidth="7"/><path d="m90 321 20-18 18 18-18 17z" fill="#10283d"/>
-        </svg>
-        <div className="art-sticker"><Sparkles size={16}/> READY WHEN YOU NEED A HAND</div>
-        <div className="art-caption"><span className="caption-icon"><Check size={17}/></span><span><b>Local skills. Real people.</b><small>Good work, moving forward.</small></span></div>
+      <div className="hero-art hgo-hero-mark" aria-label="HGO brand monogram">
+        <div className="hgo-hero-card">
+          <span className="hgo-hero-letters">HGO</span>
+          <span className="hgo-hero-underline"/>
+          <span className="hgo-hero-caption">HANDYMAN ON THE GO™</span>
+        </div>
       </div>
     </div>
     <div className="container hero-foot"><span><MapPin size={15}/> Launching in Gauteng, South Africa</span><span>For homes. For businesses. For the people who make them work.</span></div></section>
