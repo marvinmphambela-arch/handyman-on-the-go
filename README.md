@@ -4,6 +4,7 @@ Mobile-first Next.js + TypeScript + Tailwind CSS starter for the Gauteng home-se
 
 ## Included
 - Responsive landing page and service discovery
+- Three-step customer job-request wizard (front-end preview; not yet persisted)
 - FairPrice calculation contract requiring administrator-configured rates
 - Initial Supabase schema foundation
 - Environment variable template
@@ -26,4 +27,4 @@ Open http://localhost:3000.
 4. Add complete role-aware RLS policies and server-side transaction logic before enabling production writes.
 
 ## Project status
-This is the first development scaffold, not a production-ready marketplace. Authentication, uploads, live bidding, bookings, admin workflows, notifications, payments and comprehensive RLS policies remain to be implemented and tested. No market price figures are supplied; FairPrice must use verified, admin-managed catalogue data.
+This is the first development scaffold, not a production-ready marketplace. Authentication, real photo uploads, database-backed request submission, live bidding, bookings, admin workflows, notifications, payments and comprehensive RLS policies remain to be implemented and tested. The request wizard currently runs as a browser preview and does not publish or persist jobs. No market price figures are supplied; FairPrice must use verified, admin-managed catalogue data.
