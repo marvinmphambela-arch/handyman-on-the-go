@@ -25,3 +25,17 @@
 .tradesman-art .art-sticker{z-index:2;right:-4px;top:42px}.tradesman-art .art-caption{z-index:2;left:0;bottom:0}
 @media(max-width:760px){.tradesman-art{height:350px;max-width:520px;width:100%;margin:auto}.tradesman-art .art-sticker{right:-5px;top:15px}.tradesman-art .art-caption{left:0;bottom:0}}
 @media(max-width:390px){.tradesman-art{height:300px}}
+
+/* Approved HGO modern monogram identity */
+.brand-mark{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:#102747;border-radius:15px;width:56px;height:56px;flex:0 0 56px;overflow:hidden}
+.brand-mark .brand-monogram{font-size:18px;line-height:1;font-weight:850;letter-spacing:-1px;color:#fff}
+.brand-mark .brand-underline{display:block;width:24px;height:3px;border-radius:3px;background:#f58220}
+.brand-mark-small{width:42px;height:42px;flex-basis:42px;border-radius:11px;gap:4px}
+.brand-mark-small .brand-monogram{font-size:14px}
+.brand-mark-small .brand-underline{width:19px;height:2px}
+.hgo-hero-mark{display:flex;align-items:center;justify-content:center;min-height:390px}
+.hgo-hero-card{width:min(100%,390px);aspect-ratio:1/1;background:#102747;border-radius:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;box-shadow:0 28px 70px #061a2a35}
+.hgo-hero-letters{font-size:clamp(76px,12vw,132px);line-height:1;font-weight:900;letter-spacing:-.09em;color:#fff;padding-right:.09em}
+.hgo-hero-underline{width:86px;height:7px;border-radius:10px;background:#f58220}
+.hgo-hero-caption{color:#fff;font-size:12px;font-weight:750;letter-spacing:.16em;text-align:center}
+@media(max-width:760px){.hgo-hero-mark{min-height:290px}.hgo-hero-card{width:min(78%,300px);border-radius:26px}.hgo-hero-letters{font-size:96px}}
