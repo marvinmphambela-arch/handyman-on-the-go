@@ -19,7 +19,7 @@ function BrandMark({ small = false }: { small?: boolean }) {
 export default function Home() {
   return <main>
     <header className="nav-wrap"><nav className="container nav">
-      <a className="brand" href="/" aria-label="Handyman on the Go home"><BrandMark/><span className="brand-name">Handyman <span className="brand-accent">on the Go</span><sup>™</sup></span></a>
+      <a className="brand" href="/" aria-label="Handyman on the Go home"><BrandMark/><span className="brand-name">Handyman <span className="brand-accent">On The Go</span><sup>™</sup></span></a>
       <div className="nav-links"><a href="#services">Services</a><a href="#how">How it works</a><a href="#fairprice">FairPrice</a></div>
       <a className="btn btn-nav" href="/request">Get started <ArrowRight size={16}/></a>
     </nav></header>
