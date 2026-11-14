@@ -1,21 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Mode = "login" | "signup";
 
 export default function AuthForm({ mode }: { mode: Mode }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<"customer" | "handyman">("customer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState(searchParams.get("message") === "confirmation" ? "Please confirm your email using the link we sent you, then sign in." : "");
+  const [message, setMessage] = useState("");
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("message") === "confirmation") {
+      setMessage("Please confirm your email using the link we sent you, then sign in.");
+    }
+  }, []);
   const [error, setError] = useState("");
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
