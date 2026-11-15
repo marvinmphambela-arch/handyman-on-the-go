@@ -43,7 +43,8 @@ export default function NewRequestPage() {
           const suburbName = p.suburb || p.district || p.locality || p.name || "";
           const cityName = p.city || p.county || p.state || "Gauteng";
           const label = [p.name, p.street, p.housenumber, suburbName, cityName, "South Africa"].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(", ");
-          const coordinates = feature.geometry?.coordinates ?? [];\n          return { label, suburb: suburbName, city: cityName, longitude: Number(coordinates[0]), latitude: Number(coordinates[1]) };
+          const coordinates = feature.geometry?.coordinates ?? [];
+          return { label, suburb: suburbName, city: cityName, longitude: Number(coordinates[0]), latitude: Number(coordinates[1]) };
         }).filter((item: { label: string }) => item.label);
         setAddressSuggestions(results);
       } catch (err) {
