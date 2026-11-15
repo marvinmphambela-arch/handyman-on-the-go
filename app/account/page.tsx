@@ -17,6 +17,7 @@ type Job = {
   title: string;
   description: string;
   suburb: string | null;
+  street_address: string | null;
   city: string;
   urgency: string;
   status: string;
@@ -47,7 +48,7 @@ export default async function AccountPage() {
 
   const { data, error } = await supabase
     .from("jobs")
-    .select("id, title, description, suburb, city, urgency, status, created_at, service_categories(name), job_offers(id, amount_zar, message, estimated_arrival_minutes, status, created_at)")
+    .select("id, title, description, suburb, street_address, city, urgency, status, created_at, service_categories(name), job_offers(id, amount_zar, message, estimated_arrival_minutes, status, created_at)")
     .eq("customer_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -83,7 +84,7 @@ export default async function AccountPage() {
               {offer.status === "accepted" && <p className="success-note">This offer is accepted. Your booking is confirmed.</p>}
               {canChoose && offer.status === "pending" && <AcceptOfferButton offerId={offer.id} />}
             </div>)}</div>}
-          {job.status === "confirmed" && <p className="privacy-note">Your booking is confirmed. Handyman contact and job coordination are the next steps.</p>}
+          {job.status === "confirmed" && <><p className="success-note">Your booking is confirmed.</p><div className="review-summary"><div className="review-row"><small>YOUR JOB ADDRESS</small><b>{job.street_address || "No street address was supplied."}</b></div></div></>}
           {job.status !== "open" && job.status !== "confirmed" && <p className="privacy-note">This job is no longer accepting offers.</p>}
         </article>;
       })}</div>}
