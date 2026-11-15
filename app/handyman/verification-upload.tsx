@@ -46,11 +46,9 @@ export default function VerificationUpload({ handymanId, existingStatus }: { han
       setBusy(false); return;
     }
 
-    const { error: saveError } = await supabase.from("handyman_verification_submissions").insert({
-      handyman_id: handymanId,
-      id_document_path: idPath,
-      selfie_path: selfiePath,
-      status: "under_review"
+    const { error: saveError } = await supabase.rpc("submit_handyman_verification", {
+      p_id_document_path: idPath,
+      p_selfie_path: selfiePath
     });
 
     if (saveError) {
