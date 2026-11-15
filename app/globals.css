@@ -45,3 +45,9 @@
 
 /* Address autocomplete */
 .address-suggestions{border:1px solid #dfe5e2;border-radius:9px;background:#fff;margin-top:6px;overflow:hidden;box-shadow:0 8px 22px #10274712}.address-suggestion{display:flex;width:100%;align-items:flex-start;gap:10px;padding:12px 14px;text-align:left;border:0;border-bottom:1px solid #edf0ed;background:#fff;color:var(--ink);font:inherit;font-size:12px;line-height:1.5;cursor:pointer}.address-suggestion:last-child{border-bottom:0}.address-suggestion:hover,.address-suggestion:focus{background:#f5f8f6}.address-suggestion svg{flex:0 0 auto;color:#d77c37;margin-top:2px}.selected-location-fields input[readonly]{background:#f6f7f5;color:#657478;cursor:not-allowed}
+
+
+/* Customer offer acceptance */
+.accept-offer-action{margin-top:15px}
+.accept-offer-action .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.success-note{color:#26734f;background:#edf7f0;border-radius:8px;padding:11px 13px;font-size:12px;line-height:1.6;margin-top:12px}
