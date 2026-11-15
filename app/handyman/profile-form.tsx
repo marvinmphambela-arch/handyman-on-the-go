@@ -9,6 +9,7 @@ type Profile = {
   phone: string | null;
   services: string[] | null;
   service_areas: string[] | null;
+  search_radius_km?: number | null;
   years_experience: number | null;
   bio: string | null;
   available: boolean | null;
@@ -22,6 +23,7 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
   const [phone, setPhone] = useState(profile?.phone ?? "");
   const [services, setServices] = useState<string[]>(profile?.services ?? []);
   const [areas, setAreas] = useState((profile?.service_areas ?? []).join(", "));
+  const [radius, setRadius] = useState(String(profile?.search_radius_km ?? 10));
   const [experience, setExperience] = useState(String(profile?.years_experience ?? 0));
   const [bio, setBio] = useState(profile?.bio ?? "");
   const [available, setAvailable] = useState(profile?.available ?? true);
@@ -51,6 +53,7 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
       phone: phone.trim() || null,
       services,
       service_areas: areas.split(",").map(area => area.trim()).filter(Boolean),
+      search_radius_km: Number(radius),
       years_experience: years,
       bio: bio.trim() || null,
       available
@@ -67,9 +70,11 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
     <input id="handyman-phone" type="tel" placeholder="+27..." value={phone} onChange={e=>setPhone(e.target.value)} />
     <span className="field-label">Services you offer</span>
     <div className="choice-grid">{serviceOptions.map(service=><label key={service} className="choice-option"><input type="checkbox" checked={services.includes(service)} onChange={()=>toggleService(service)} /> {service}</label>)}</div>
-    <label className="field-label" htmlFor="handyman-areas">Areas you serve</label>
-    <input id="handyman-areas" placeholder="e.g. Randburg, Sandton, Rosebank" value={areas} onChange={e=>setAreas(e.target.value)} />
-    <p className="form-hint">Separate areas with commas.</p>
+    <label className="field-label" htmlFor="handyman-radius">How far are you willing to travel?</label>
+    <select id="handyman-radius" value={radius} onChange={e=>setRadius(e.target.value)}>
+      <option value="5">5 km</option><option value="10">10 km (recommended)</option><option value="20">20 km</option><option value="30">30 km</option>
+    </select>
+    <p className="form-hint">Nearby jobs will be matched within this distance of your current location when location matching is enabled.</p>
     <label className="field-label" htmlFor="handyman-experience">Years of experience</label>
     <input id="handyman-experience" type="number" min="0" max="60" value={experience} onChange={e=>setExperience(e.target.value)} />
     <label className="field-label" htmlFor="handyman-bio">About your work</label>
