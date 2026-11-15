@@ -4,10 +4,27 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL("/account", origin));
+
+    if (!error) {
+      // Render may expose an internal localhost URL to the server.
+      // Always send production users back to the public app URL.
+      const appUrl =
+        process.env.NODE_ENV === "production"
+          ? "https://handyman-on-the-go.onrender.com"
+          : origin;
+
+      return NextResponse.redirect(new URL("/account", appUrl));
+    }
   }
-  return NextResponse.redirect(new URL("/login?message=confirmation", origin));
+
+  const appUrl =
+    process.env.NODE_ENV === "production"
+      ? "https://handyman-on-the-go.onrender.com"
+      : origin;
+
+  return NextResponse.redirect(new URL("/login?message=confirmation", appUrl));
 }
