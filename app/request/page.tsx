@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, MapPin, Paperclip, Wrench } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -17,20 +17,51 @@ export default function NewRequestPage() {
   const [suburb, setSuburb] = useState("");
   const [city, setCity] = useState("Johannesburg");
   const [address, setAddress] = useState("");
+  const [addressQuery, setAddressQuery] = useState("");
+  const [addressSuggestions, setAddressSuggestions] = useState<Array<{ label: string; suburb: string; city: string }>>([]);
+  const [addressSearching, setAddressSearching] = useState(false);
+  const [addressSelected, setAddressSelected] = useState(false);
   const [photos, setPhotos] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (addressQuery.trim().length < 3 || addressSelected) { setAddressSuggestions([]); return; }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setAddressSearching(true);
+      try {
+        const params = new URLSearchParams({ q: `${addressQuery.trim()}, Gauteng, South Africa`, limit: "6", lang: "en", lat: "-26.2041", lon: "28.0473", bbox: "27.0,-27.5,29.5,-25.0" });
+        const response = await fetch(`https://photon.komoot.io/api/?${params.toString()}`, { signal: controller.signal });
+        if (!response.ok) throw new Error("Address search unavailable");
+        const data = await response.json();
+        const results = (data.features ?? []).map((feature: any) => {
+          const p = feature.properties ?? {};
+          const suburbName = p.suburb || p.district || p.locality || p.name || "";
+          const cityName = p.city || p.county || p.state || "Gauteng";
+          const label = [p.name, p.street, p.housenumber, suburbName, cityName, "South Africa"].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(", ");
+          return { label, suburb: suburbName, city: cityName };
+        }).filter((item: { label: string }) => item.label);
+        setAddressSuggestions(results);
+      } catch (err) {
+        if (!controller.signal.aborted) setAddressSuggestions([]);
+      } finally {
+        if (!controller.signal.aborted) setAddressSearching(false);
+      }
+    }, 450);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [addressQuery, addressSelected]);
+
   const canContinue = useMemo(() => {
     if (step === 0) return title.trim().length >= 5 && description.trim().length >= 20;
-    if (step === 1) return suburb.trim().length > 1 && city.trim().length > 1 && address.trim().length > 4;
+    if (step === 1) return suburb.trim().length > 1 && city.trim().length > 1 && address.trim().length > 4 && addressSelected;
     return true;
   }, [step, title, description, suburb, city, address]);
 
   function next() {
     if (!canContinue) {
-      setError(step === 0 ? "Add a job title and a description of at least 20 characters." : "Please complete your suburb, city and street or area address.");
+      setError(step === 0 ? "Add a job title and a description of at least 20 characters." : "Please search for an address and select one of the suggestions.");
       return;
     }
     setError("");
@@ -105,9 +136,13 @@ export default function NewRequestPage() {
         </div>}
         {step === 1 && <div className="form-step"><div className="step-kicker">STEP 2 OF 3</div><h2>Where is the job?</h2><p className="form-hint">Enter the location where the work is needed.</p>
           <div className="location-note"><MapPin size={19}/><span><b>Gauteng launch area</b><small>For now, enter the job location manually.</small></span></div>
-          <label className="field-label" htmlFor="suburb">Suburb or area</label><input id="suburb" value={suburb} onChange={(e) => setSuburb(e.target.value)} placeholder="e.g. Randburg"/>
-          <label className="field-label" htmlFor="city">City or town</label><input id="city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Johannesburg"/>
-          <label className="field-label" htmlFor="address">Street address or useful location details</label><textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street name, complex name or nearby landmark" rows={3}/>
+          <label className="field-label" htmlFor="address-search">Search for the job address</label>
+          <input id="address-search" value={addressQuery} onChange={(e) => { setAddressQuery(e.target.value); setAddressSelected(false); setAddress(""); setAddressSuggestions([]); }} placeholder="Start typing a street, suburb or building..." autoComplete="off"/>
+          {addressSearching && <p className="form-hint">Searching addresses…</p>}
+          {addressSuggestions.length > 0 && <div className="address-suggestions" role="listbox" aria-label="Address suggestions">{addressSuggestions.map((item, index) => <button type="button" className="address-suggestion" key={`${item.label}-${index}`} onClick={() => { setAddress(item.label); setAddressQuery(item.label); setSuburb(item.suburb || suburb); setCity(item.city || city); setAddressSelected(true); setAddressSuggestions([]); }}><MapPin size={16}/><span>{item.label}</span></button>)}</div>}
+          {addressSelected && <p className="privacy-note">Address selected: {address}</p>}
+          {!addressSelected && addressQuery.trim().length >= 3 && !addressSearching && addressSuggestions.length === 0 && <p className="form-hint">No suggestions found. Try a nearby street or suburb name.</p>}
+          <div className="selected-location-fields"><label className="field-label" htmlFor="suburb">Suburb or area (from selected address)</label><input id="suburb" value={suburb} readOnly/><label className="field-label" htmlFor="city">City or town (from selected address)</label><input id="city" value={city} readOnly/></div>
           <div className="privacy-note">Your exact address is stored with your request and is not visible to other customers. Handyman access will be configured separately before matching is launched.</div>
         </div>}
         {step === 2 && <div className="form-step"><div className="step-kicker">STEP 3 OF 3</div><h2>Review your request.</h2><p className="form-hint">Check the details before saving your request.</p>
