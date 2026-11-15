@@ -34,7 +34,7 @@ create policy "Admins manage handyman verification submissions"
 
 -- Explicit grants: submission writes are performed by a narrow SECURITY DEFINER RPC.
 revoke all on public.handyman_verification_submissions from anon, authenticated;
-grant select on public.handyman_verification_submissions to authenticated;
+grant select, insert, update, delete on public.handyman_verification_submissions to authenticated;
 
 create or replace function public.submit_handyman_verification(
   p_id_document_path text,
