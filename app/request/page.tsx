@@ -20,7 +20,8 @@ export default function NewRequestPage() {
   const [addressQuery, setAddressQuery] = useState("");
   const [addressSuggestions, setAddressSuggestions] = useState<Array<{ label: string; suburb: string; city: string; latitude: number; longitude: number }>>([]);
   const [addressSearching, setAddressSearching] = useState(false);
-  const [addressSelected, setAddressSelected] = useState(false);\n  const [jobLatitude, setJobLatitude] = useState<number | null>(null);\n  const [jobLongitude, setJobLongitude] = useState<number | null>(null);
+  const [addressSelected, setAddressSelected] = useState(false);
+  const [jobLatitude, setJobLatitude] = useState<number | null>(null);\n  const [jobLongitude, setJobLongitude] = useState<number | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
