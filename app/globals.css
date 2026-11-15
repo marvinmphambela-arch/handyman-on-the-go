@@ -42,3 +42,6 @@
 
 /* Handyman offer form */
 .offer-form{margin-top:24px;padding-top:22px;border-top:1px solid #edf0ed}.offer-form h3{font-size:18px;margin:0 0 8px;color:var(--navy)}.offer-form .field-label{margin-top:15px}.offer-form input,.offer-form textarea{display:block;width:100%;border:1px solid #dfe5e2;border-radius:8px;padding:13px 14px;font:inherit;font-size:13px;color:var(--ink);outline:none;background:#fff}.offer-form input:focus,.offer-form textarea:focus{border-color:#df8b4b;box-shadow:0 0 0 3px #f28a321c}.offer-form textarea{resize:vertical;line-height:1.6}.offer-form .btn{margin-top:17px}
+
+/* Address autocomplete */
+.address-suggestions{border:1px solid #dfe5e2;border-radius:9px;background:#fff;margin-top:6px;overflow:hidden;box-shadow:0 8px 22px #10274712}.address-suggestion{display:flex;width:100%;align-items:flex-start;gap:10px;padding:12px 14px;text-align:left;border:0;border-bottom:1px solid #edf0ed;background:#fff;color:var(--ink);font:inherit;font-size:12px;line-height:1.5;cursor:pointer}.address-suggestion:last-child{border-bottom:0}.address-suggestion:hover,.address-suggestion:focus{background:#f5f8f6}.address-suggestion svg{flex:0 0 auto;color:#d77c37;margin-top:2px}.selected-location-fields input[readonly]{background:#f6f7f5;color:#657478;cursor:not-allowed}
