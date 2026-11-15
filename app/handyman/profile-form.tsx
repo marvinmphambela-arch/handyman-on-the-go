@@ -17,6 +17,28 @@ type Profile = {
 
 const serviceOptions = ["Plumbing", "Electrical", "Painting", "Carpentry", "Home repairs", "Cleaning"];
 
+function getCurrentPosition(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    if (!("geolocation" in navigator)) {
+      reject(new Error("Location access is not supported by this browser."));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      resolve,
+      error => {
+        if (error.code === error.PERMISSION_DENIED) {
+          reject(new Error("Location permission was not granted. Allow location access in your browser to become available for nearby jobs."));
+        } else if (error.code === error.TIMEOUT) {
+          reject(new Error("Your location could not be found in time. Please try again."));
+        } else {
+          reject(new Error("We could not get your location. Please check your phone's location setting and try again."));
+        }
+      },
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
+    );
+  });
+}
+
 export default function HandymanProfileForm({ profile }: { profile: Profile | null }) {
   const router = useRouter();
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
@@ -45,9 +67,29 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
     if (services.length === 0) {
       setError("Please choose at least one service."); setBusy(false); return;
     }
+
+    let latitude: number | null = null;
+    let longitude: number | null = null;
+    let locationUpdatedAt: string | null = null;
+
+    if (available) {
+      try {
+        setMessage("Please allow location access when your browser asks. Your location is used for nearby job matching.");
+        const position = await getCurrentPosition();
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
+        locationUpdatedAt = new Date().toISOString();
+      } catch (locationError) {
+        setMessage("");
+        setError(locationError instanceof Error ? locationError.message : "Location access is required when you are available for nearby jobs.");
+        setBusy(false);
+        return;
+      }
+    }
+
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setError("Please sign in again."); setBusy(false); return; }
+    if (!user) { setError("Please sign in again."); setMessage(""); setBusy(false); return; }
     const { error: saveError } = await supabase.from("profiles").update({
       full_name: fullName.trim(),
       phone: phone.trim() || null,
@@ -56,10 +98,16 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
       search_radius_km: Number(radius),
       years_experience: years,
       bio: bio.trim() || null,
-      available
+      available,
+      current_latitude: latitude,
+      current_longitude: longitude,
+      location_updated_at: locationUpdatedAt
     }).eq("id", user.id);
-    if (saveError) setError(saveError.message);
-    else { setMessage("Your handyman profile has been saved."); router.refresh(); }
+    if (saveError) { setError(saveError.message); setMessage(""); }
+    else {
+      setMessage(available ? "Your profile is saved and your location is ready for nearby job matching." : "Your handyman profile has been saved. You are marked unavailable and your saved location has been cleared.");
+      router.refresh();
+    }
     setBusy(false);
   }
 
@@ -80,6 +128,7 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
     <label className="field-label" htmlFor="handyman-bio">About your work</label>
     <textarea id="handyman-bio" rows={4} maxLength={600} placeholder="Briefly describe your experience and the work you do." value={bio} onChange={e=>setBio(e.target.value)} />
     <label className="choice-option"><input type="checkbox" checked={available} onChange={e=>setAvailable(e.target.checked)} /> I am currently available for work</label>
+    <p className="form-hint">When you save while available, your browser will ask permission to use your current location. Your exact location is kept private and is not shown to customers or other handymen.</p>
     {error && <p className="form-error" role="alert">{error}</p>}
     {message && <p className="privacy-note" role="status">{message}</p>}
     <button className="btn btn-orange" type="submit" disabled={busy}>{busy ? "Saving..." : "Save my profile"}</button>
