@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, MapPin, Paperclip, Wrench } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-const categories = ["Plumbing", "Electrical", "Painting", "Carpentry", "Home repairs", "Cleaning", "Other"];
+const categories = ["Plumbing", "Electrical", "Painting & Decorating", "Carpentry", "Building & Renovations", "Gardening & Outdoor", "Cleaning", "Appliance Repairs", "Roofing & Gutters", "Locks & Security", "Furniture Assembly", "General Home Repairs", "Other Home Services"];
 const steps = ["The job", "Location", "Review"];
 
 export default function NewRequestPage() {
@@ -107,6 +107,8 @@ export default function NewRequestPage() {
         city: city.trim(),
         province: "Gauteng",
         street_address: address.trim(),
+        latitude: jobLatitude,
+        longitude: jobLongitude,
         urgency,
       });
       if (insertError) {
