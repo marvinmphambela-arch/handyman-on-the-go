@@ -89,8 +89,19 @@ export default function HandymanOfferForm({ jobId }: { jobId: string }) {
     <input id={`offer-price-${jobId}`} type="number" min="1" step="1" required value={amount} onChange={e => setAmount(e.target.value)} placeholder="e.g. 650" />
     <label className="field-label" htmlFor={`offer-message-${jobId}`}>Message to the customer (optional)</label>
     <textarea id={`offer-message-${jobId}`} rows={3} maxLength={500} value={message} onChange={e => setMessage(e.target.value)} placeholder="Briefly explain what your price includes." />
-    <label className="field-label" htmlFor={`offer-arrival-${jobId}`}>Estimated arrival (minutes)</label>
-    <input id={`offer-arrival-${jobId}`} type="number" min="1" max="10080" step="1" required value={arrival} onChange={e => setArrival(e.target.value)} />
+    <label className="field-label" htmlFor={`offer-arrival-${jobId}`}>Estimated arrival</label>
+    <select id={`offer-arrival-${jobId}`} required value={arrival} onChange={e => setArrival(e.target.value)}>
+      <option value="15">15 minutes</option>
+      <option value="30">30 minutes</option>
+      <option value="45">45 minutes</option>
+      <option value="60">1 hour</option>
+      <option value="90">1 hour 30 minutes</option>
+      <option value="120">2 hours</option>
+      <option value="180">3 hours</option>
+      <option value="240">4 hours</option>
+      <option value="480">Later today (within 8 hours)</option>
+      <option value="1440">Tomorrow (within 24 hours)</option>
+    </select>
     {error && <p className="form-error" role="alert">{error}</p>}
     {notice && <p className="privacy-note" role="status">{notice}</p>}
     <button className="btn btn-orange" type="submit" disabled={saving}>{saving ? "Saving…" : offer ? "Update my offer" : "Send my offer"}</button>
