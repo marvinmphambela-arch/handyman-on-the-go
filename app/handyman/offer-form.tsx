@@ -72,7 +72,9 @@ export default function HandymanOfferForm({ jobId }: { jobId: string }) {
     if (result.error || !result.data) {
       setError(result.error?.code === "23505"
         ? "You already have an offer on this job. Refresh the page to load it."
-        : "We couldn't save your offer. The job may no longer be open, or your profile may not match it.");
+        : result.error
+          ? `Offer save failed (${result.error.code ?? "unknown"}): ${result.error.message}${result.error.details ? " — " + result.error.details : ""}`
+          : "The offer was not saved. Please refresh and try again.");
     } else {
       setOffer(result.data as Offer);
       setNotice(offer ? "Your pending offer has been updated." : "Your offer has been sent to the customer.");
