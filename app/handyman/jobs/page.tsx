@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { MapPin, Clock3, BriefcaseBusiness } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import HandymanOfferForm from "../offer-form";
 
 type Job = {
   id: string;
@@ -53,7 +54,8 @@ export default async function HandymanJobsPage() {
           <p>{job.description}</p>
           <p className="form-hint"><MapPin size={15}/> {job.suburb ? job.suburb + ", " : ""}{job.city}</p>
           <p className="form-hint"><Clock3 size={15}/> Posted {new Date(job.created_at).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" })}</p>
-          <p className="privacy-note">Customer contact details and exact street address are hidden. Offer and counteroffer tools are the next step.</p>
+          <p className="privacy-note">Customer contact details and exact street address are hidden to protect privacy.</p>
+          <HandymanOfferForm jobId={job.id} />
         </article>;
       })}</div>}
     </div>
