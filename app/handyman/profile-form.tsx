@@ -15,7 +15,7 @@ type Profile = {
   available: boolean | null;
 };
 
-const serviceOptions = ["Plumbing", "Electrical", "Painting", "Carpentry", "Home repairs", "Cleaning"];
+const serviceOptions = ["Plumbing", "Electrical", "Painting & Decorating", "Carpentry", "Building & Renovations", "Gardening & Outdoor", "Cleaning", "Appliance Repairs", "Roofing & Gutters", "Locks & Security", "Furniture Assembly", "General Home Repairs", "Other Home Services"];
 
 function getCurrentPosition(): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) => {
