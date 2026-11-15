@@ -39,3 +39,6 @@
 .hgo-hero-underline{width:86px;height:7px;border-radius:10px;background:#f58220}
 .hgo-hero-caption{color:#fff;font-size:12px;font-weight:750;letter-spacing:.16em;text-align:center}
 @media(max-width:760px){.hgo-hero-mark{min-height:290px}.hgo-hero-card{width:min(78%,300px);border-radius:26px}.hgo-hero-letters{font-size:96px}}
+
+/* Handyman offer form */
+.offer-form{margin-top:24px;padding-top:22px;border-top:1px solid #edf0ed}.offer-form h3{font-size:18px;margin:0 0 8px;color:var(--navy)}.offer-form .field-label{margin-top:15px}.offer-form input,.offer-form textarea{display:block;width:100%;border:1px solid #dfe5e2;border-radius:8px;padding:13px 14px;font:inherit;font-size:13px;color:var(--ink);outline:none;background:#fff}.offer-form input:focus,.offer-form textarea:focus{border-color:#df8b4b;box-shadow:0 0 0 3px #f28a321c}.offer-form textarea{resize:vertical;line-height:1.6}.offer-form .btn{margin-top:17px}
