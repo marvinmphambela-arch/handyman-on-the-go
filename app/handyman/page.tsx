@@ -22,7 +22,7 @@ export default async function HandymanDashboard() {
       <Link href="/account" className="back-link">My account</Link>
     </div></header>
     <div className="container request-shell">
-      <div className="request-heading"><div className="eyebrow">HANDYMAN WORKSPACE</div><h1>Your handyman dashboard.</h1><p>Set up your professional profile so customers can learn about your services.</p></div>
+      <div className="request-heading"><div className="eyebrow">HANDYMAN WORKSPACE</div><h1>Your handyman dashboard.</h1><p>Set up your professional profile so customers can learn about your services.</p><Link className="btn btn-dark" href="/handyman/jobs">View job opportunities</Link></div>
       <HandymanProfileForm profile={profile} />
     </div>
   </main>;
