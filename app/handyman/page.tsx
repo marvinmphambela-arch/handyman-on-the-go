@@ -90,7 +90,7 @@ export default async function HandymanDashboard() {
 
   if (profile?.role !== "handyman") redirect("/account");
 
-  const [opportunitiesResult, rejectedOffersResult, bookingsResult, notificationsResult, walletResult, walletTransactionsResult, earningsResult, payoutsResult] = await Promise.all([
+  const [opportunitiesResult, rejectedOffersResult, bookingsResult, notificationsResult, walletResult, walletTransactionsResult, pendingCommissionsResult, earningsResult, payoutsResult] = await Promise.all([
     supabase.from("jobs")
       .select("id, title, description, suburb, city, urgency, created_at, service_categories(name)")
       .eq("status", "open")
@@ -109,6 +109,7 @@ export default async function HandymanDashboard() {
       .limit(10),
     supabase.from("handyman_access_wallets").select("balance_zar").eq("handyman_id", user.id).maybeSingle(),
     supabase.from("handyman_access_wallet_transactions").select("id, transaction_type, direction, amount_zar, status, description, created_at").eq("handyman_id", user.id).order("created_at", { ascending: false }).limit(10),
+    supabase.from("handyman_access_wallet_transactions").select("amount_zar").eq("handyman_id", user.id).eq("transaction_type", "commission_debit").eq("status", "pending"),
     supabase.from("handyman_earnings").select("id, job_id, labour_amount_zar, commission_amount_zar, net_earnings_zar, payment_method, status, commission_status, completed_at").eq("handyman_id", user.id).order("completed_at", { ascending: false }).limit(20),
     supabase.from("handyman_payout_requests").select("id, payout_type, gross_amount_zar, fee_amount_zar, net_amount_zar, status, requested_at").eq("handyman_id", user.id).order("requested_at", { ascending: false }).limit(10)
   ]);
@@ -130,7 +131,7 @@ export default async function HandymanDashboard() {
   const walletTransactions = (walletTransactionsResult.data ?? []) as WalletTransaction[];
   const earnings = (earningsResult.data ?? []) as EarningsRecord[];
   const payouts = (payoutsResult.data ?? []) as PayoutRecord[];
-  const pendingCommissionTotal = walletTransactions.filter(item => item.transaction_type === "commission_debit" && item.status === "pending").reduce((sum, item) => sum + item.amount_zar, 0);
+  const pendingCommissionTotal = (pendingCommissionsResult.data ?? []).reduce((sum, item) => sum + item.amount_zar, 0);
   const platformHeldEarnings = earnings.filter(item => ["held", "available"].includes(item.status) && item.payment_method === "platform").reduce((sum, item) => sum + item.net_earnings_zar, 0);
   const paidEarnings = earnings.filter(item => item.status === "paid").reduce((sum, item) => sum + item.net_earnings_zar, 0);
   const directEftEarnings = earnings.filter(item => item.payment_method === "direct_eft").reduce((sum, item) => sum + item.net_earnings_zar, 0);
