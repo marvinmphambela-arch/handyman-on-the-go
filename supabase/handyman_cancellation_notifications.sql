@@ -61,3 +61,6 @@ after update of status on public.jobs
 for each row
 execute function public.notify_selected_handyman_of_cancellation();
 
+
+-- Publish notification inserts so an open handyman dashboard updates immediately.
+alter publication supabase_realtime add table public.handyman_notifications;
