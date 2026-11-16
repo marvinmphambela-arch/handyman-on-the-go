@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AcceptOfferButton from "@/components/accept-offer-button";
+import CancelBookingButton from "@/components/cancel-booking-button";
 
 type Offer = {
   id: string;
@@ -85,7 +86,8 @@ export default async function AccountPage() {
               {offer.status === "accepted" && <p className="success-note">This offer is accepted. Your booking is confirmed.</p>}
               {canChoose && offer.status === "pending" && <AcceptOfferButton offerId={offer.id} />}
             </div>)}</div>}
-          {job.status === "confirmed" && <><p className="success-note">Your booking is confirmed.</p><div className="review-summary"><div className="review-row"><small>YOUR JOB ADDRESS</small><b>{job.street_address || "No street address was supplied."}</b></div></div></>}
+          {job.status === "confirmed" && <><p className="success-note">Your booking is confirmed.</p><div className="review-summary"><div className="review-row"><small>YOUR JOB ADDRESS</small><b>{job.street_address || "No street address was supplied."}</b></div></div><p className="privacy-note">You may cancel this booking only before the handyman starts work.</p><CancelBookingButton jobId={job.id} /></>}
+          {job.status === "cancelled" && <p className="privacy-note">This booking has been cancelled. It remains in your job history.</p>}
           {job.status !== "open" && job.status !== "confirmed" && <p className="privacy-note">This job is no longer accepting offers.</p>}
         </article>;
       })}</div>}
