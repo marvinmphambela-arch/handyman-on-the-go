@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import RealtimeRefresh from "@/components/realtime-refresh";
 import AcceptOfferButton from "@/components/accept-offer-button";
 import CancelBookingButton from "@/components/cancel-booking-button";
 import FindReplacementHandyman from "@/components/find-replacement-handyman";
@@ -63,6 +64,7 @@ export default async function AccountPage() {
   const jobs = (data ?? []) as Job[];
 
   return <main className="request-page">
+    <RealtimeRefresh />
     <header className="request-nav"><div className="container request-nav-inner">
       <Link className="brand" href="/"><span className="brand-mark"><span className="brand-monogram">HGO</span><span className="brand-underline"/></span><span className="brand-name">Handyman <span className="brand-accent">On The Go</span><sup>™</sup></span></Link>
       <Link href="/request" className="btn btn-orange">Post a job</Link>
