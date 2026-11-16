@@ -17,6 +17,9 @@ export default function RealtimeRefresh() {
       .on("postgres_changes", { event: "*", schema: "public", table: "job_offers" }, () => {
         router.refresh();
       })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "handyman_notifications" }, () => {
+        router.refresh();
+      })
       .subscribe();
 
     return () => {
