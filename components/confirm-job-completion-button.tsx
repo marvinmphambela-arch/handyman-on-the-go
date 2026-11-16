@@ -20,7 +20,7 @@ type CompletionResult = {
 const zar = (amount: number) => Number(amount || 0).toLocaleString("en-ZA");
 
 export default function ConfirmJobCompletionButton({ jobId }: { jobId: string }) {
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("direct_eft");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("platform");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -132,16 +132,20 @@ export default function ConfirmJobCompletionButton({ jobId }: { jobId: string })
       <p className="form-hint">
         Confirm only after the handyman has finished the work. For platform payments, you will pay the accepted offer amount securely through Paystack first. The customer never pays an extra commission.
       </p>
-      <label className="field-label" htmlFor={`payment-method-${jobId}`}>How are you paying?</label>
-      <select
-        id={`payment-method-${jobId}`}
-        value={paymentMethod}
-        onChange={event => setPaymentMethod(event.target.value as PaymentMethod)}
-        disabled={busy}
-      >
-        <option value="direct_eft">Direct EFT to the handyman</option>
-        <option value="platform">Through Handyman On The Go (Paystack)</option>
-      </select>
+      <fieldset className="choice-fieldset" disabled={busy || paymentNeedsReview}>
+        <legend className="field-label">Choose how you will pay</legend>
+        <p className="choice-help">Select one option. The customer pays the accepted offer amount only; the 10% platform commission is never added to your bill.</p>
+        <label className={paymentMethod === "platform" ? "choice-card selected" : "choice-card"}>
+          <input type="radio" name={`payment-method-${jobId}`} value="platform" checked={paymentMethod === "platform"} onChange={() => setPaymentMethod("platform")} />
+          <span className="choice-card-copy"><strong>Pay securely through Handyman On The Go</strong><small>Pay the accepted offer amount through Paystack. Payment must be verified before completion can be confirmed.</small></span>
+          <span className="choice-indicator" aria-hidden="true" />
+        </label>
+        <label className={paymentMethod === "direct_eft" ? "choice-card selected" : "choice-card"}>
+          <input type="radio" name={`payment-method-${jobId}`} value="direct_eft" checked={paymentMethod === "direct_eft"} onChange={() => setPaymentMethod("direct_eft")} />
+          <span className="choice-card-copy"><strong>Pay directly by EFT</strong><small>Pay the handyman directly. This payment is not collected or verified by Handyman On The Go.</small></span>
+          <span className="choice-indicator" aria-hidden="true" />
+        </label>
+      </fieldset>
       {paymentMethod === "platform" && paymentVerified && (
         <p className="success-note" role="status">
           Paystack has verified your payment. Please confirm that the work is complete to finish this job.
