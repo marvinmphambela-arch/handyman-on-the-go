@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import MarkEnRouteButton from "@/components/mark-en-route-button";
 
 type Booking = {
   id: string;
@@ -11,6 +12,7 @@ type Booking = {
   city: string;
   urgency: string;
   status: string;
+  handyman_en_route_at: string | null;
   created_at: string;
 };
 
@@ -29,7 +31,7 @@ export default async function HandymanBookingsPage() {
 
   const { data, error } = await supabase
     .from("jobs")
-    .select("id, title, description, street_address, suburb, city, urgency, status, created_at")
+    .select("id, title, description, street_address, suburb, city, urgency, status, handyman_en_route_at, created_at")
     .eq("status", "confirmed")
     .order("created_at", { ascending: false });
 
@@ -53,6 +55,7 @@ export default async function HandymanBookingsPage() {
           <div className="review-row"><small>AREA</small><b>{booking.suburb ? booking.suburb + ", " : ""}{booking.city}</b></div>
         </div>
         <p className="privacy-note">This address is shown because your offer was accepted for this booking. Keep it private and use it only to complete the job.</p>
+        {booking.handyman_en_route_at ? <p className="success-note">You marked yourself as on the way at {new Date(booking.handyman_en_route_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}.</p> : <MarkEnRouteButton jobId={booking.id} />}
       </article>)}</div>}
     </div>
   </main>;
