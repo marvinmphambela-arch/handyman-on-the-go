@@ -36,6 +36,10 @@ type HandymanNotification = {
   id: string;
   title: string;
   message: string;
+  job_title: string | null;
+  service_name: string | null;
+  cancellation_reason: string | null;
+  compensation_zar: number | null;
   created_at: string;
 };
 
@@ -62,7 +66,7 @@ export default async function HandymanDashboard() {
       .in("status", ["confirmed", "in_progress"])
       .order("created_at", { ascending: false }),
     supabase.from("handyman_notifications")
-      .select("id, title, message, created_at")
+      .select("id, title, message, job_title, service_name, cancellation_reason, compensation_zar, created_at")
       .order("created_at", { ascending: false })
       .limit(10)
   ]);
@@ -100,6 +104,13 @@ export default async function HandymanDashboard() {
         <div className="job-list">{notifications.map(notification => <article className="request-card" key={notification.id}>
           <div className="eyebrow">{new Date(notification.created_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}</div>
           <h3>{notification.title}</h3><p>{notification.message}</p>
+          <div className="review-summary">
+            <div className="review-row"><small>JOB</small><b>{notification.job_title || "Job details unavailable"}</b></div>
+            <div className="review-row"><small>SERVICE</small><b>{notification.service_name || "Not recorded"}</b></div>
+            <div className="review-row"><small>CUSTOMER'S REASON</small><b>{notification.cancellation_reason || "No reason was recorded."}</b></div>
+            <div className="review-row"><small>CALL-OUT COMPENSATION RECORDED</small><b>{notification.compensation_zar && notification.compensation_zar > 0 ? `R${notification.compensation_zar.toLocaleString("en-ZA")}` : "R0 — none recorded"}</b></div>
+          </div>
+          <p className="privacy-note">The customer's exact street address is not shown in cancellation notices.</p>
         </article>)}</div>}
 
       <div className="section-heading"><div><div className="eyebrow">YOUR WORK</div><h2>Active bookings ({bookings.length})</h2></div></div>
