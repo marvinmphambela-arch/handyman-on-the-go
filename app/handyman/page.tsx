@@ -52,6 +52,7 @@ type EarningsRecord = {
   net_earnings_zar: number;
   payment_method: string;
   status: string;
+  commission_status: string;
   completed_at: string;
 };
 
@@ -89,7 +90,7 @@ export default async function HandymanDashboard() {
 
   if (profile?.role !== "handyman") redirect("/account");
 
-  const [opportunitiesResult, rejectedOffersResult, bookingsResult, notificationsResult, walletResult, walletTransactionsResult, earningsResult, payoutsResult] = await Promise.all([
+  const [opportunitiesResult, rejectedOffersResult, bookingsResult, notificationsResult, walletResult, walletTransactionsResult, pendingCommissionsResult, earningsResult, payoutsResult] = await Promise.all([
     supabase.from("jobs")
       .select("id, title, description, suburb, city, urgency, created_at, service_categories(name)")
       .eq("status", "open")
@@ -108,7 +109,8 @@ export default async function HandymanDashboard() {
       .limit(10),
     supabase.from("handyman_access_wallets").select("balance_zar").eq("handyman_id", user.id).maybeSingle(),
     supabase.from("handyman_access_wallet_transactions").select("id, transaction_type, direction, amount_zar, status, description, created_at").eq("handyman_id", user.id).order("created_at", { ascending: false }).limit(10),
-    supabase.from("handyman_earnings").select("id, job_id, labour_amount_zar, commission_amount_zar, net_earnings_zar, payment_method, status, completed_at").eq("handyman_id", user.id).order("completed_at", { ascending: false }).limit(20),
+    supabase.from("handyman_access_wallet_transactions").select("amount_zar").eq("handyman_id", user.id).eq("transaction_type", "commission_debit").eq("status", "pending"),
+    supabase.from("handyman_earnings").select("id, job_id, labour_amount_zar, commission_amount_zar, net_earnings_zar, payment_method, status, commission_status, completed_at").eq("handyman_id", user.id).order("completed_at", { ascending: false }).limit(20),
     supabase.from("handyman_payout_requests").select("id, payout_type, gross_amount_zar, fee_amount_zar, net_amount_zar, status, requested_at").eq("handyman_id", user.id).order("requested_at", { ascending: false }).limit(10)
   ]);
 
@@ -129,6 +131,7 @@ export default async function HandymanDashboard() {
   const walletTransactions = (walletTransactionsResult.data ?? []) as WalletTransaction[];
   const earnings = (earningsResult.data ?? []) as EarningsRecord[];
   const payouts = (payoutsResult.data ?? []) as PayoutRecord[];
+  const pendingCommissionTotal = (pendingCommissionsResult.data ?? []).reduce((sum, item) => sum + item.amount_zar, 0);
   const platformHeldEarnings = earnings.filter(item => ["held", "available"].includes(item.status) && item.payment_method === "platform").reduce((sum, item) => sum + item.net_earnings_zar, 0);
   const paidEarnings = earnings.filter(item => item.status === "paid").reduce((sum, item) => sum + item.net_earnings_zar, 0);
   const directEftEarnings = earnings.filter(item => item.payment_method === "direct_eft").reduce((sum, item) => sum + item.net_earnings_zar, 0);
@@ -220,6 +223,11 @@ export default async function HandymanDashboard() {
     <p className="privacy-note">Top-ups are processed securely through Paystack. Your wallet is credited only after the payment is verified.</p>
     <AccessWalletTopup />
   </section>
+  {pendingCommissionTotal > 0 && <section className="request-card">
+    <div className="eyebrow">OUTSTANDING COMMISSION</div>
+    <h2>R{pendingCommissionTotal.toLocaleString("en-ZA")}</h2>
+    <p>This commission is due from completed jobs. It will be collected automatically from your next verified wallet top-up.</p>
+  </section>}
   <section className="request-card">
     <div className="eyebrow">PLATFORM-HELD EARNINGS</div>
     <h2>R{platformHeldEarnings.toLocaleString("en-ZA")}</h2>
@@ -247,6 +255,7 @@ export default async function HandymanDashboard() {
   <h3>Labour: R{item.labour_amount_zar.toLocaleString("en-ZA")}</h3>
   <div className="review-summary">
     <div className="review-row"><small>PLATFORM COMMISSION</small><b>R{item.commission_amount_zar.toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>COMMISSION COLLECTION</small><b className="capitalize">{item.commission_status.replaceAll("_", " ")}</b></div>
     <div className="review-row"><small>NET HANDYMAN EARNINGS</small><b>R{item.net_earnings_zar.toLocaleString("en-ZA")}</b></div>
     <div className="review-row"><small>PAYMENT METHOD</small><b>{item.payment_method === "direct_eft" ? "Customer direct EFT" : "Platform payment"}</b></div>
     <div className="review-row"><small>STATUS</small><b className="capitalize">{item.status.replaceAll("_", " ")}</b></div>
