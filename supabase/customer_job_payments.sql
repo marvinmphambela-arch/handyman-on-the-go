@@ -23,6 +23,8 @@ create index if not exists customer_job_payments_job_status_idx
   on public.customer_job_payments (job_id, status, created_at desc);
 create index if not exists customer_job_payments_customer_date_idx
   on public.customer_job_payments (customer_id, created_at desc);
+create unique index if not exists customer_job_payments_one_paid_per_job
+  on public.customer_job_payments (job_id) where status = 'paid';
 
 alter table public.customer_job_payments enable row level security;
 
@@ -55,7 +57,7 @@ declare
   v_payment public.customer_job_payments%rowtype;
   v_existing_paid uuid;
 begin
-  if p_reference is null or p_amount_zar is null or p_amount_zar <= 0 or p_currency <> 'ZAR' then
+  if p_reference is null or p_amount_zar is null or p_amount_zar <= 0 or p_currency is distinct from 'ZAR' then
     raise exception 'Invalid verified payment details';
   end if;
 
