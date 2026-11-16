@@ -54,7 +54,7 @@ export default function InProgressReviewRequest({ jobId }: { jobId: string }) {
       <h3>{request?.status === "declined" ? "Still need help with this booking?" : "Need help with this booking?"}</h3>
       <p className="privacy-note">If you have concerns about safety, behaviour, or the quality of work, request an admin review. You do not have to continue if you feel unsafe. This request does not automatically charge a cancellation fee.</p>
       <label className="form-label" htmlFor={`review-type-${jobId}`}>What is your concern?</label>
-      <select id={`review-type-${jobId}`} className="form-input" value={concernType} onChange={e => setConcernType(e.target.value)} disabled={busy}>
+      <select id={`review-type-${jobId}`} className="form-input choice-select" value={concernType} onChange={e => setConcernType(e.target.value)} disabled={busy}>
         <option value="safety_or_behaviour">Safety or handyman behaviour</option>
         <option value="quality_or_competence">Quality of work or skills</option>
         <option value="other">Another concern</option>
