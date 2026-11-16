@@ -17,6 +17,7 @@ export default function HandymanOfferForm({ jobId }: { jobId: string }) {
   const [message, setMessage] = useState("");
   const [arrival, setArrival] = useState("60");
   const [loading, setLoading] = useState(true);
+  const [walletBalance, setWalletBalance] = useState(0);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -27,13 +28,14 @@ export default function HandymanOfferForm({ jobId }: { jobId: string }) {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { if (active) { setError("Please sign in again."); setLoading(false); } return; }
-      const { data, error: loadError } = await supabase
+      const [{ data, error: loadError }, { data: wallet }] = await Promise.all([supabase
         .from("job_offers")
         .select("id, amount_zar, message, estimated_arrival_minutes, status")
         .eq("job_id", jobId)
         .eq("handyman_id", user.id)
-        .maybeSingle();
+        .maybeSingle(), supabase.from("handyman_access_wallets").select("balance_zar").eq("handyman_id", user.id).maybeSingle()]);
       if (!active) return;
+      setWalletBalance(wallet?.balance_zar ?? 0);
       if (loadError) setError("We couldn't load your offer. Please refresh the page.");
       else if (data) {
         setOffer(data as Offer);
@@ -87,6 +89,8 @@ export default function HandymanOfferForm({ jobId }: { jobId: string }) {
 
   return <form className="offer-form" onSubmit={submit}>
     <h3>{offer ? "Update your offer" : "Make an offer"}</h3>
+    <p className="form-hint">Access Wallet balance: <strong>R{walletBalance.toLocaleString("en-ZA")}</strong>. You need at least R10 to submit an offer.</p>
+    {walletBalance < 10 && <p className="form-error" role="alert">Your Access Wallet is below R10. Top up your wallet in the Earnings tab before submitting an offer.</p>}
     <label className="field-label" htmlFor={`offer-price-${jobId}`}>Your price (R)</label>
     <input id={`offer-price-${jobId}`} type="number" min="1" step="1" required value={amount} onChange={e => setAmount(e.target.value)} placeholder="e.g. 650" />
     <label className="field-label" htmlFor={`offer-message-${jobId}`}>Message to the customer (optional)</label>
@@ -106,6 +110,6 @@ export default function HandymanOfferForm({ jobId }: { jobId: string }) {
     </select>
     {error && <p className="form-error" role="alert">{error}</p>}
     {notice && <p className="privacy-note" role="status">{notice}</p>}
-    <button className="btn btn-orange" type="submit" disabled={saving}>{saving ? "Saving…" : offer ? "Update my offer" : "Send my offer"}</button>
+    <button className="btn btn-orange" type="submit" disabled={saving || walletBalance < 10}>{saving ? "Saving…" : offer ? "Update my offer" : "Send my offer"}</button>
   </form>;
 }
