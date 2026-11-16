@@ -256,7 +256,7 @@ begin
 
       update public.handyman_access_wallet_transactions
       set status = 'posted',
-          description = regexp_replace(description, '\\. It will be collected from your next wallet top-up\\.$', '') ,
+          description = 'Commission collected from verified wallet top-up.',
           posted_at = now()
       where id = v_commission.id;
 
