@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AcceptOfferButton from "@/components/accept-offer-button";
 import CancelBookingButton from "@/components/cancel-booking-button";
-import InProgressReviewRequest from "@/components/in-progress-review-request";
 
 type Offer = {
   id: string;
@@ -91,7 +90,7 @@ export default async function AccountPage() {
               {canChoose && offer.status === "pending" && <AcceptOfferButton offerId={offer.id} />}
             </div>)}</div>}
           {job.status === "confirmed" && <><p className="success-note">Your booking is confirmed.</p><div className="review-summary"><div className="review-row"><small>YOUR JOB ADDRESS</small><b>{job.street_address || "No street address was supplied."}</b></div></div><p className="privacy-note">You may cancel before work starts. If the handyman has marked themselves as on the way, a fixed R250 travel compensation will be recorded for them.</p>{job.handyman_en_route_at && <p className="success-note">The handyman marked themselves as on the way at {new Date(job.handyman_en_route_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}.</p>}<CancelBookingButton jobId={job.id} enRoute={Boolean(job.handyman_en_route_at)} /></>}
-          {job.status === "in_progress" && <><p className="success-note">The handyman has marked this job as in progress. If you have concerns about safety, behaviour, or the quality of work, you can request an admin review.</p><InProgressReviewRequest jobId={job.id} /></>}
+          {job.status === "in_progress" && <><p className="success-note">The handyman has marked this job as in progress. You remain in control and can cancel immediately if you no longer wish to continue.</p><CancelBookingButton jobId={job.id} enRoute={Boolean(job.handyman_en_route_at)} inProgress /></>}
           {job.status === "cancelled" && <><p className="privacy-note">This booking has been cancelled. It remains in your job history.</p>{job.cancellation_reason && <p>Cancellation reason: {job.cancellation_reason}</p>}{(job.cancellation_compensation_zar ?? 0) > 0 && <p className="success-note">R{job.cancellation_compensation_zar} travel compensation has been recorded for the handyman. Payment collection is not yet automated.</p>}</> }
           {job.status !== "open" && job.status !== "confirmed" && job.status !== "in_progress" && <p className="privacy-note">This job is no longer accepting offers.</p>}
         </article>;
