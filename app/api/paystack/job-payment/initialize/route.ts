@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -65,8 +66,8 @@ export async function POST(request: Request) {
       .eq("status", "pending");
     if (abandonError) throw abandonError;
 
-    const paymentId = crypto.randomUUID();
-    const reference = `hgo_job_${jobId.replaceAll("-", "").slice(0, 12)}_${Date.now()}_${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`;
+    const paymentId = randomUUID();
+    const reference = `hgo_job_${jobId.replaceAll("-", "").slice(0, 12)}_${Date.now()}_${randomUUID().replaceAll("-", "").slice(0, 8)}`;
     const { error: insertError } = await admin.from("customer_job_payments").insert({
       id: paymentId,
       job_id: jobId,
