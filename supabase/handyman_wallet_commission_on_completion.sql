@@ -47,7 +47,7 @@ begin
     raise exception 'You must be signed in.';
   end if;
 
-  if p_payment_method not in ('platform', 'direct_eft') then
+  if p_payment_method is null or p_payment_method not in ('platform', 'direct_eft') then
     raise exception 'Choose a valid payment method.';
   end if;
 
@@ -139,7 +139,7 @@ begin
       related_job_id, description, posted_at
     ) values (
       v_handyman_id, 'commission_debit', 'debit', v_commission_amount,
-      v_commission_status = 'paid' and 'posted' or 'pending',
+      case when v_commission_status = 'paid' then 'posted' else 'pending' end,
       p_job_id,
       case when v_commission_status = 'paid'
         then '10% platform commission for completed job: ' || v_job_title
