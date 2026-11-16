@@ -390,7 +390,10 @@ begin
   -- A legacy pending row may already occupy the unique job/type index. Reuse it
   -- rather than creating a duplicate. No pending commission is ever collected later.
   update public.handyman_access_wallet_transactions
-  set amount_zar = v_wallet_contribution,
+  set amount_zar = case
+        when v_wallet_contribution > 0 then v_wallet_contribution
+        else amount_zar
+      end,
       status = case when v_wallet_contribution > 0 then 'posted' else 'reversed' end,
       direction = 'debit',
       description = case
