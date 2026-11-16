@@ -45,6 +45,7 @@ export default async function AccountPage() {
     .maybeSingle();
 
   if (profile?.role === "handyman") redirect("/handyman");
+  if (profile?.role === "admin") redirect("/admin");
 
   const { data, error } = await supabase
     .from("jobs")
