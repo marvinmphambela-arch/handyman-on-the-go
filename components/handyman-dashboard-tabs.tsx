@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 const tabs = [
   { id: "home", label: "Home" },
@@ -17,6 +17,9 @@ export default function HandymanDashboardTabs({ home, jobs, bookings, cancellati
   home: ReactNode; jobs: ReactNode; bookings: ReactNode; cancellations: ReactNode; earnings: ReactNode; profile: ReactNode;
 }) {
   const [active, setActive] = useState<TabId>("home");
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("section") === "earnings") setActive("earnings");
+  }, []);
   const panels: Record<TabId, ReactNode> = { home, jobs, bookings, cancellations, earnings, profile };
   return <>
     <nav className="handyman-dashboard-nav" aria-label="Dashboard sections">
