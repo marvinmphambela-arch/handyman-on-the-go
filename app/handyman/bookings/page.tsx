@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import MarkEnRouteButton from "@/components/mark-en-route-button";
 import StartWorkButton from "@/components/start-work-button";
+import StatusBadge from "@/components/status-badge";
 
 type Booking = {
   id: string;
@@ -48,7 +49,7 @@ export default async function HandymanBookingsPage() {
       {error && <section className="request-card"><h2>We couldn't load your bookings.</h2><p>Please refresh the page. If this continues, contact support.</p></section>}
       {!error && bookings.length === 0 && <section className="request-card completion"><h2>No confirmed bookings yet.</h2><p>When a customer accepts one of your offers, the booking and its exact address will appear here.</p><Link href="/handyman/jobs" className="btn btn-orange">View job opportunities</Link></section>}
       {!error && bookings.length > 0 && <div className="job-list">{bookings.map(booking => <article className="request-card" key={booking.id}>
-        <div className="eyebrow"><span className="capitalize">{booking.status.replaceAll("_", " ")}</span> · <span className="capitalize">{booking.urgency}</span></div>
+        <div className="eyebrow"><StatusBadge status={booking.status} /> · <span className="capitalize">{booking.urgency}</span></div>
         <h2>{booking.title}</h2>
         <p>{booking.description}</p>
         <div className="review-summary">
