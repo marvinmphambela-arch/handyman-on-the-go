@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import RealtimeRefresh from "@/components/realtime-refresh";
 import MarkEnRouteButton from "@/components/mark-en-route-button";
 import StartWorkButton from "@/components/start-work-button";
 import StatusBadge from "@/components/status-badge";
@@ -40,6 +41,7 @@ export default async function HandymanBookingsPage() {
   const bookings = (data ?? []) as Booking[];
 
   return <main className="request-page">
+    <RealtimeRefresh />
     <header className="request-nav"><div className="container request-nav-inner">
       <Link className="brand" href="/"><span className="brand-mark"><span className="brand-monogram">HGO</span><span className="brand-underline"/></span><span className="brand-name">Handyman <span className="brand-accent">On The Go</span><sup>™</sup></span></Link>
       <Link href="/handyman" className="back-link">My profile</Link>
