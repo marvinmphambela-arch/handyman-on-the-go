@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { MapPin, Clock3, BriefcaseBusiness } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import RealtimeRefresh from "@/components/realtime-refresh";
 import HandymanOfferForm from "../offer-form";
 
 type Job = {
@@ -37,6 +38,7 @@ export default async function HandymanJobsPage() {
   const jobs = (data ?? []) as Job[];
 
   return <main className="request-page">
+    <RealtimeRefresh />
     <header className="request-nav"><div className="container request-nav-inner">
       <Link className="brand" href="/"><span className="brand-mark"><span className="brand-monogram">HGO</span><span className="brand-underline"/></span><span className="brand-name">Handyman <span className="brand-accent">On The Go</span><sup>™</sup></span></Link>
       <Link href="/handyman" className="back-link">My profile</Link>
