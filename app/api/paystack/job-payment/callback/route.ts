@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.RENDER_EXTERNAL_URL || "https://handyman-on-the-go.onrender.com";
   const destination = new URL("/account", siteUrl);
 
-  if (!reference || !/^[a-zA-Z0-9.=\-]{8,120}$/.test(reference)) {
+  if (!reference || !/^[a-zA-Z0-9_=\-]{8,120}$/.test(reference)) {
     destination.searchParams.set("job_payment", "failed");
     return NextResponse.redirect(destination);
   }
