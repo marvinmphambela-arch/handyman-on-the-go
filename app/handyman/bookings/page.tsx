@@ -19,6 +19,8 @@ type Booking = {
   created_at: string;
 };
 
+type HandymanNotification = { id: string; title: string; message: string; created_at: string };
+
 export default async function HandymanBookingsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -32,13 +34,19 @@ export default async function HandymanBookingsPage() {
 
   if (profile?.role !== "handyman") redirect("/account");
 
-  const { data, error } = await supabase
-    .from("jobs")
+  const [{ data, error }, { data: notificationsData }] = await Promise.all([
+    supabase.from("jobs")
     .select("id, title, description, street_address, suburb, city, urgency, status, handyman_en_route_at, created_at")
     .in("status", ["confirmed", "in_progress"])
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false }),
+    supabase.from("handyman_notifications")
+      .select("id, title, message, created_at")
+      .order("created_at", { ascending: false })
+      .limit(10)
+  ]);
 
   const bookings = (data ?? []) as Booking[];
+  const notifications = (notificationsData ?? []) as HandymanNotification[];
 
   return <main className="request-page">
     <RealtimeRefresh />
@@ -48,6 +56,8 @@ export default async function HandymanBookingsPage() {
     </div></header>
     <div className="container request-shell">
       <div className="request-heading"><div className="eyebrow">HANDYMAN WORKSPACE</div><h1>Confirmed bookings.</h1><p>Only jobs where your offer was accepted appear here. The exact address is private to you and the customer.</p></div>
+      <div className="section-heading"><div><div className="eyebrow">LIVE UPDATES</div><h2>Notifications ({notifications.length})</h2></div></div>
+      {notifications.length === 0 ? <section className="request-card"><p className="privacy-note">No notifications yet. Booking cancellations will appear here.</p></section> : <div className="job-list">{notifications.map(notification => <article className="request-card" key={notification.id}><div className="eyebrow">{new Date(notification.created_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}</div><h3>{notification.title}</h3><p>{notification.message}</p></article>)}</div>}
       {error && <section className="request-card"><h2>We couldn't load your bookings.</h2><p>Please refresh the page. If this continues, contact support.</p></section>}
       {!error && bookings.length === 0 && <section className="request-card completion"><h2>No confirmed bookings yet.</h2><p>When a customer accepts one of your offers, the booking and its exact address will appear here.</p><Link href="/handyman/jobs" className="btn btn-orange">View job opportunities</Link></section>}
       {!error && bookings.length > 0 && <div className="job-list">{bookings.map(booking => <article className="request-card" key={booking.id}>
