@@ -9,7 +9,7 @@ type Submission = {
   selfie_path: string;
   status: string;
   submitted_at: string;
-  profiles: { full_name: string | null; phone: string | null } | { full_name: string | null; phone: string | null }[] | null;
+  profiles: { full_name: string | null; phone: string | null } | null;
 };
 
 export default async function AdminDashboard() {
@@ -22,7 +22,7 @@ export default async function AdminDashboard() {
 
   const { data, error } = await supabase
     .from("handyman_verification_submissions")
-    .select("handyman_id, id_document_path, selfie_path, status, submitted_at, profiles(full_name, phone)")
+    .select("handyman_id, id_document_path, selfie_path, status, submitted_at, profiles!handyman_verification_submissions_handyman_id_fkey(full_name, phone)")
     .order("submitted_at", { ascending: true });
 
   const submissions = (data ?? []) as Submission[];
@@ -47,7 +47,7 @@ export default async function AdminDashboard() {
       {error && <section className="request-card"><h2>We couldn't load submissions.</h2><p>{error.message}</p></section>}
       {!error && submissions.length === 0 && <section className="request-card completion"><h2>No verification submissions yet.</h2><p>New handyman applications will appear here after they submit their documents.</p></section>}
       {submissions.map(item => {
-        const person = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles;
+        const person = item.profiles;
         const files = documents.find(doc => doc.handymanId === item.handyman_id);
         return <article className="request-card" key={item.handyman_id}>
           <div className="eyebrow">SUBMISSION · <span className="capitalize">{item.status.replaceAll("_", " ")}</span></div>
