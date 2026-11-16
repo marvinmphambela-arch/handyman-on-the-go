@@ -7,7 +7,7 @@ create or replace function public.reset_replacement_choice_on_cancellation()
 returns trigger
 language plpgsql
 set search_path = ''
-as $
+as $$
 begin
   if new.status = 'cancelled'::public.job_status
      and old.status is distinct from new.status then
@@ -15,7 +15,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists reset_replacement_choice_on_cancellation on public.jobs;
 create trigger reset_replacement_choice_on_cancellation
