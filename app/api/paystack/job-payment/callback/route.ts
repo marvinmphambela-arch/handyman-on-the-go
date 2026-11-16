@@ -58,7 +58,7 @@ export async function GET(request: Request) {
     });
     if (recordError) throw recordError;
 
-    destination.searchParams.set("job_payment", paymentResult === "duplicate_paid" ? "duplicate" : "verified");
+    destination.searchParams.set("job_payment", paymentResult === "duplicate_paid" ? "duplicate" : paymentResult === "refund_required" ? "refund_required" : "verified");
     return NextResponse.redirect(destination);
   } catch (error) {
     console.error("Customer job payment callback failed:", error);
