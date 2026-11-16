@@ -423,8 +423,9 @@ $$;
 revoke all on function public.customer_confirm_job_completion(uuid, text) from public, anon;
 grant execute on function public.customer_confirm_job_completion(uuid, text) to authenticated;
 
--- Restore the wallet top-up RPC to a simple verified credit. Top-ups never collect
--- commission carryforwards; those are recovered only from platform-held job earnings.
+-- Restore the verified top-up RPC and collect outstanding Direct EFT commission
+-- from the top-up only if it has not already been collected from platform earnings.
+-- Wallet row is locked before carryforward rows, matching completion RPC lock order.
 create or replace function public.post_verified_handyman_topup(
   p_handyman_id uuid,
   p_reference text,
@@ -437,12 +438,16 @@ set search_path = ''
 as $$
 declare
   v_transaction public.handyman_access_wallet_transactions%rowtype;
+  v_carry record;
   v_balance integer;
+  v_remaining_topup integer;
+  v_collect integer;
 begin
   if p_handyman_id is null or p_reference is null or length(p_reference) < 8
      or p_amount_zar < 100 then
     raise exception 'Invalid top-up details';
   end if;
+
   select * into v_transaction
   from public.handyman_access_wallet_transactions
   where payment_reference = p_reference
@@ -451,19 +456,67 @@ begin
   for update;
   if not found then raise exception 'Top-up reference not found'; end if;
   if v_transaction.amount_zar <> p_amount_zar then raise exception 'Top-up amount does not match'; end if;
+
   if v_transaction.status = 'posted' then
-    select balance_zar into v_balance from public.handyman_access_wallets where handyman_id = p_handyman_id;
+    select balance_zar into v_balance
+    from public.handyman_access_wallets
+    where handyman_id = p_handyman_id;
     return coalesce(v_balance, 0);
   end if;
   if v_transaction.status <> 'pending' then raise exception 'Top-up is not pending'; end if;
 
   insert into public.handyman_access_wallets (handyman_id, balance_zar)
-  values (p_handyman_id, 0) on conflict (handyman_id) do nothing;
+  values (p_handyman_id, 0)
+  on conflict (handyman_id) do nothing;
+
+  select balance_zar into v_balance
+  from public.handyman_access_wallets
+  where handyman_id = p_handyman_id
+  for update;
+
+  v_remaining_topup := p_amount_zar;
+
+  for v_carry in
+    select c.id, c.source_job_id, c.remaining_amount_zar
+    from public.handyman_commission_carryforwards c
+    where c.handyman_id = p_handyman_id
+      and c.remaining_amount_zar > 0
+    order by c.created_at, c.id
+    for update
+  loop
+    exit when v_remaining_topup <= 0;
+    v_collect := least(v_carry.remaining_amount_zar, v_remaining_topup);
+
+    update public.handyman_commission_carryforwards
+    set remaining_amount_zar = remaining_amount_zar - v_collect,
+        updated_at = now()
+    where id = v_carry.id;
+
+    insert into public.handyman_access_wallet_transactions (
+      handyman_id, job_id, transaction_type, direction, amount_zar,
+      status, description, posted_at
+    ) values (
+      p_handyman_id, v_carry.source_job_id, 'commission_carryforward_debit',
+      'debit', v_collect, 'posted',
+      'Outstanding Direct EFT commission recovered from verified wallet top-up',
+      now()
+    );
+
+    v_remaining_topup := v_remaining_topup - v_collect;
+  end loop;
+
+  -- Record the full verified top-up, and separately record any commission
+  -- recovered above. Only the remainder increases the spendable wallet balance.
   update public.handyman_access_wallets
-  set balance_zar = balance_zar + p_amount_zar, updated_at = now()
-  where handyman_id = p_handyman_id returning balance_zar into v_balance;
+  set balance_zar = balance_zar + v_remaining_topup,
+      updated_at = now()
+  where handyman_id = p_handyman_id
+  returning balance_zar into v_balance;
+
   update public.handyman_access_wallet_transactions
-  set status = 'posted', posted_at = now() where id = v_transaction.id;
+  set status = 'posted', posted_at = now()
+  where id = v_transaction.id;
+
   return v_balance;
 end;
 $$;
