@@ -119,7 +119,7 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
     <span className="field-label">Services you offer</span>
     <div className="choice-grid">{serviceOptions.map(service=><label key={service} className="choice-option"><input type="checkbox" checked={services.includes(service)} onChange={()=>toggleService(service)} /> {service}</label>)}</div>
     <label className="field-label" htmlFor="handyman-radius">How far are you willing to travel?</label>
-    <select id="handyman-radius" value={radius} onChange={e=>setRadius(e.target.value)}>
+    <select className="choice-select" id="handyman-radius" value={radius} onChange={e=>setRadius(e.target.value)}>
       <option value="5">5 km</option><option value="10">10 km (recommended)</option><option value="20">20 km</option><option value="30">30 km</option>
     </select>
     <p className="form-hint">Nearby jobs will be matched within this distance of your current location when location matching is enabled.</p>
