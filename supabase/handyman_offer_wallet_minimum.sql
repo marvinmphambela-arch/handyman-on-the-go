@@ -40,9 +40,9 @@ as $$
           from public.handyman_access_wallets w
           where w.handyman_id = p_handyman_id
         ), 0) >= coalesce((
-          select s.minimum_offer_balance_zar
+          select s.minimum_offer_wallet_balance_zar
           from public.platform_financial_settings s
-          where s.singleton = true
+          where s.id = true
         ), 10)
     );
 $$;
