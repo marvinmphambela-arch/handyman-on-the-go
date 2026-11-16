@@ -69,3 +69,11 @@
 .handyman-dashboard-nav a:hover,.handyman-dashboard-nav a:focus{background:#fff1e6;color:#9b531e;outline:none}
 #dashboard-home,#new-jobs,#my-bookings,#cancellations,#my-profile{scroll-margin-top:90px}
 @media(max-width:600px){.handyman-dashboard-nav{position:fixed;top:auto;bottom:0;left:0;right:0;margin:0;padding:8px 4px calc(8px + env(safe-area-inset-bottom));border-radius:14px 14px 0 0;justify-content:space-around;gap:0;box-shadow:0 -8px 25px #18372a18}.handyman-dashboard-nav a{padding:12px 7px;font-size:10px;flex:1;text-align:center}.request-shell{padding-bottom:100px}#dashboard-home,#new-jobs,#my-bookings,#cancellations,#my-profile{scroll-margin-top:18px}}
+
+
+/* Tabbed handyman dashboard: one focused section at a time */
+.handyman-dashboard-nav button{appearance:none;border:0;background:transparent;cursor:pointer;font:inherit;padding:11px 16px;border-radius:9px;color:#41535e;font-size:12px;font-weight:750;white-space:nowrap}
+.handyman-dashboard-nav button:hover,.handyman-dashboard-nav button:focus-visible{background:#fff1e6;color:#9b531e;outline:none}
+.handyman-dashboard-nav button.active{background:var(--navy);color:#fff}
+.handyman-dashboard-panel{min-height:55vh}
+@media(max-width:600px){.handyman-dashboard-nav button{padding:12px 5px;font-size:10px;flex:1}.handyman-dashboard-nav{justify-content:space-around}}
