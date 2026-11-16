@@ -77,3 +77,33 @@
 .handyman-dashboard-nav button.active{background:var(--navy);color:#fff}
 .handyman-dashboard-panel{min-height:55vh}
 @media(max-width:600px){.handyman-dashboard-nav button{padding:12px 5px;font-size:10px;flex:1}.handyman-dashboard-nav{justify-content:space-around}}
+
+
+/* Clear, consistent choice controls across the app */
+.choice-fieldset{border:0;padding:0;margin:20px 0 0;min-width:0}
+.choice-fieldset .field-label{margin:0 0 8px}
+.choice-help{font-size:12px;line-height:1.6;color:var(--muted);margin:0 0 12px}
+.choice-card{position:relative;display:flex;align-items:flex-start;gap:13px;width:100%;padding:16px;margin:9px 0;border:2px solid #dce4e0;border-radius:12px;background:#fff;color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s}
+.choice-card:hover{border-color:#e6a16b;background:#fffaf6}
+.choice-card.selected{border-color:#e28b4b;background:#fff5ed;box-shadow:0 0 0 2px #f28a3218}
+.choice-card input[type=radio]{width:19px;height:19px;flex:0 0 19px;margin:2px 0 0;accent-color:#c96b28;cursor:pointer}
+.choice-card-copy{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0}
+.choice-card-copy strong{font-size:13px;line-height:1.4}
+.choice-card-copy small{font-size:11px;line-height:1.55;color:#667579}
+.choice-indicator{width:13px;height:13px;flex:0 0 13px;margin:4px 2px 0;border:1px solid #9aa9a2;border-radius:50%;background:#fff}
+.choice-card.selected .choice-indicator{border:4px solid #c96b28}
+.choice-select,.form-input.choice-select,.offer-form select{display:block;width:100%;min-height:48px;padding:12px 42px 12px 14px;border:2px solid #cbd6d0;border-radius:9px;background-color:#fff;color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer;outline:none}
+.choice-select:focus,.form-input.choice-select:focus,.offer-form select:focus{border-color:#d77c37;box-shadow:0 0 0 3px #f28a3224}
+.choice-select:disabled,.choice-card:has(input:disabled){opacity:.65;cursor:not-allowed}
+.choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.choice-grid .choice-option{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #dce4e0;border-radius:9px;background:#fff;font-size:12px;font-weight:650;cursor:pointer}
+.choice-grid .choice-option:has(input:checked){border-color:#e28b4b;background:#fff5ed;color:#854719}
+.choice-grid .choice-option input[type=checkbox],.choice-option input[type=checkbox]{width:18px;height:18px;flex:0 0 18px;accent-color:#c96b28;cursor:pointer}
+.category-pill{font-size:12px;font-weight:650;padding:11px 15px}
+.category-pill.selected{border:2px solid #d77c37;background:#fff1e6;color:#854719;font-weight:800;box-shadow:0 0 0 2px #f28a3218}
+.category-pill.selected:before{content:"✓ ";font-weight:900}
+.urgency-option{border-width:2px;min-height:78px}
+.urgency-option.selected{border-width:2px;box-shadow:0 0 0 2px #f28a3218}
+.urgency-option.selected b:before{content:"✓ ";color:#a6531e}
+.choice-option:focus-within,.choice-card:focus-within{outline:3px solid #f28a3240;outline-offset:2px}
+@media(max-width:600px){.choice-grid{grid-template-columns:1fr}.choice-card{padding:14px}.choice-card-copy strong{font-size:12px}}
