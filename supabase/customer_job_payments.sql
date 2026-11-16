@@ -5,6 +5,21 @@
 
 begin;
 
+-- Permit a separate ledger entry when outstanding commission is recovered
+-- from a verified future wallet top-up.
+alter table public.handyman_access_wallet_transactions
+  drop constraint if exists handyman_access_wallet_transactions_transaction_type_check;
+alter table public.handyman_access_wallet_transactions
+  add constraint handyman_access_wallet_transactions_transaction_type_check
+  check (transaction_type = any (array[
+    'top_up'::text,
+    'commission_debit'::text,
+    'commission_carryforward_debit'::text,
+    'refund'::text,
+    'admin_adjustment'::text
+  ]));
+
+
 create table if not exists public.customer_job_payments (
   id uuid primary key default gen_random_uuid(),
   job_id uuid not null references public.jobs(id) on delete restrict,
