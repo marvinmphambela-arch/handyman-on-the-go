@@ -57,11 +57,15 @@ export default async function HandymanDashboard() {
 
   if (profile?.role !== "handyman") redirect("/account");
 
-  const [opportunitiesResult, bookingsResult, notificationsResult] = await Promise.all([
+  const [opportunitiesResult, rejectedOffersResult, bookingsResult, notificationsResult] = await Promise.all([
     supabase.from("jobs")
       .select("id, title, description, suburb, city, urgency, created_at, service_categories(name)")
       .eq("status", "open")
       .order("created_at", { ascending: false }),
+    supabase.from("job_offers")
+      .select("job_id")
+      .eq("handyman_id", user.id)
+      .eq("status", "rejected"),
     supabase.from("jobs")
       .select("id, title, description, street_address, suburb, city, urgency, status, handyman_en_route_at, created_at")
       .in("status", ["confirmed", "in_progress"])
@@ -72,7 +76,9 @@ export default async function HandymanDashboard() {
       .limit(10)
   ]);
 
-  const opportunities = (opportunitiesResult.data ?? []) as DashboardJob[];
+  const rejectedJobIds = new Set((rejectedOffersResult.data ?? []).map(offer => offer.job_id));
+  const opportunities = ((opportunitiesResult.data ?? []) as DashboardJob[])
+    .filter(job => !rejectedJobIds.has(job.id));
   const bookings = (bookingsResult.data ?? []) as ActiveBooking[];
   const notifications = (notificationsResult.data ?? []) as HandymanNotification[];
 
