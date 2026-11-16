@@ -77,6 +77,19 @@ begin
   -- Serialise successful attempts for a job, including late settlement of an abandoned attempt.
   perform 1 from public.jobs where id = v_payment.job_id for update;
 
+  if v_payment.status = 'paid' then
+    return 'paid';
+  end if;
+  if v_payment.status = 'duplicate_paid' then
+    return 'duplicate_paid';
+  end if;
+  if v_payment.status = 'refund_required' then
+    return 'refund_required';
+  end if;
+  if v_payment.status = 'failed' then
+    raise exception 'This payment attempt was marked failed and cannot be credited';
+  end if;
+
   -- If the booking changed while checkout was open, do not apply the payment to earnings.
   if not exists (
     select 1
@@ -92,19 +105,6 @@ begin
     set status = 'refund_required', paid_at = now(), updated_at = now()
     where id = v_payment.id;
     return 'refund_required';
-  end if;
-
-  if v_payment.status = 'paid' then
-    return 'paid';
-  end if;
-  if v_payment.status = 'duplicate_paid' then
-    return 'duplicate_paid';
-  end if;
-  if v_payment.status = 'refund_required' then
-    return 'refund_required';
-  end if;
-  if v_payment.status = 'failed' then
-    raise exception 'This payment attempt was marked failed and cannot be credited';
   end if;
 
   select id into v_existing_paid
