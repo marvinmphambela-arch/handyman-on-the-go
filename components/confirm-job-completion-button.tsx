@@ -35,7 +35,7 @@ export default function ConfirmJobCompletionButton({ jobId }: { jobId: string })
     if (busy || paymentNeedsReview) return;
     const paymentLabel = method === "direct_eft" ? "direct EFT" : "Paystack";
     const confirmed = window.confirm(
-      `Confirm that this job is complete and the customer has paid by ${paymentLabel}? The platform commission is taken from the handyman's Access Wallet first. Any remaining Direct EFT shortfall is carried forward to the next platform-held job earnings.`
+      `Confirm that this job is complete and the customer has paid by ${paymentLabel}? The platform commission is taken from the handyman's Access Wallet first. Any remaining Direct EFT shortfall is recovered from a future verified Access Wallet top-up or platform-held job earnings, whichever happens first.`
     );
     if (!confirmed) return;
 
@@ -73,7 +73,7 @@ export default function ConfirmJobCompletionButton({ jobId }: { jobId: string })
       setMessage("Job completed. No commission was due under the current platform settings.");
     } else if (method === "direct_eft") {
       setMessage(
-        `Job completed. Total commission: R${zar(total)}. Access Wallet contribution: R${zar(wallet)}. Direct EFT shortfall carried forward: R${zar(shortfall)}. The customer's direct payment remains R${zar(net)}; the shortfall will be recovered from future platform-held earnings, not from a wallet top-up.`
+        `Job completed. Total commission: R${zar(total)}. Access Wallet contribution: R${zar(wallet)}. Direct EFT shortfall carried forward: R${zar(shortfall)}. The customer's direct payment remains R${zar(net)}; the shortfall will be recovered from a future verified Access Wallet top-up or platform-held job earnings, whichever happens first.`
       );
     } else {
       setMessage(
