@@ -48,6 +48,10 @@ type EarningsRecord = {
   id: string;
   job_id: string;
   labour_amount_zar: number;
+  commission_total_zar: number;
+  commission_wallet_amount_zar: number;
+  commission_shortfall_zar: number;
+  commission_carryforward_deducted_zar: number;
   commission_amount_zar: number;
   net_earnings_zar: number;
   payment_method: string;
@@ -89,7 +93,7 @@ export default async function HandymanDashboard() {
 
   if (profile?.role !== "handyman") redirect("/account");
 
-  const [opportunitiesResult, rejectedOffersResult, bookingsResult, notificationsResult, walletResult, walletTransactionsResult, earningsResult, payoutsResult] = await Promise.all([
+  const [opportunitiesResult, rejectedOffersResult, bookingsResult, notificationsResult, walletResult, walletTransactionsResult, earningsResult, payoutsResult, carryforwardsResult] = await Promise.all([
     supabase.from("jobs")
       .select("id, title, description, suburb, city, urgency, created_at, service_categories(name)")
       .eq("status", "open")
@@ -108,8 +112,9 @@ export default async function HandymanDashboard() {
       .limit(10),
     supabase.from("handyman_access_wallets").select("balance_zar").eq("handyman_id", user.id).maybeSingle(),
     supabase.from("handyman_access_wallet_transactions").select("id, transaction_type, direction, amount_zar, status, description, created_at").eq("handyman_id", user.id).order("created_at", { ascending: false }).limit(10),
-    supabase.from("handyman_earnings").select("id, job_id, labour_amount_zar, commission_amount_zar, net_earnings_zar, payment_method, status, completed_at").eq("handyman_id", user.id).order("completed_at", { ascending: false }).limit(20),
-    supabase.from("handyman_payout_requests").select("id, payout_type, gross_amount_zar, fee_amount_zar, net_amount_zar, status, requested_at").eq("handyman_id", user.id).order("requested_at", { ascending: false }).limit(10)
+    supabase.from("handyman_earnings").select("id, job_id, labour_amount_zar, commission_total_zar, commission_wallet_amount_zar, commission_shortfall_zar, commission_carryforward_deducted_zar, commission_amount_zar, net_earnings_zar, payment_method, status, completed_at").eq("handyman_id", user.id).order("completed_at", { ascending: false }).limit(20),
+    supabase.from("handyman_payout_requests").select("id, payout_type, gross_amount_zar, fee_amount_zar, net_amount_zar, status, requested_at").eq("handyman_id", user.id).order("requested_at", { ascending: false }).limit(10),
+    supabase.from("handyman_commission_carryforwards").select("remaining_amount_zar").eq("handyman_id", user.id).gt("remaining_amount_zar", 0)
   ]);
 
   const rejectedJobIds = [...new Set((rejectedOffersResult.data ?? []).map(offer => offer.job_id))];
@@ -129,6 +134,7 @@ export default async function HandymanDashboard() {
   const walletTransactions = (walletTransactionsResult.data ?? []) as WalletTransaction[];
   const earnings = (earningsResult.data ?? []) as EarningsRecord[];
   const payouts = (payoutsResult.data ?? []) as PayoutRecord[];
+  const outstandingCommission = (carryforwardsResult.data ?? []).reduce((sum, item) => sum + Number(item.remaining_amount_zar || 0), 0);
   const platformHeldEarnings = earnings.filter(item => ["held", "available"].includes(item.status) && item.payment_method === "platform").reduce((sum, item) => sum + item.net_earnings_zar, 0);
   const paidEarnings = earnings.filter(item => item.status === "paid").reduce((sum, item) => sum + item.net_earnings_zar, 0);
   const directEftEarnings = earnings.filter(item => item.payment_method === "direct_eft").reduce((sum, item) => sum + item.net_earnings_zar, 0);
@@ -216,9 +222,14 @@ export default async function HandymanDashboard() {
   <section className="request-card">
     <div className="eyebrow">PREPAID ACCESS WALLET</div>
     <h2>R{accessWalletBalance.toLocaleString("en-ZA")}</h2>
-    <p>Used for the platform commission after a job is successfully completed. Minimum top-up R100. Keep at least R10 in this wallet to submit offers.</p>
+    <p>Used first toward the platform commission after a job is completed. Minimum top-up R100. Keep at least R10 in this wallet to submit offers.</p>
     <p className="privacy-note">Top-ups are processed securely through Paystack. Your wallet is credited only after the payment is verified.</p>
     <AccessWalletTopup />
+  </section>
+  <section className="request-card">
+    <div className="eyebrow">OUTSTANDING COMMISSION</div>
+    <h2>R{outstandingCommission.toLocaleString("en-ZA")}</h2>
+    <p>Any Direct EFT commission shortfall is recovered from your next verified wallet top-up or your next platform-held job earnings, whichever happens first. It is never collected twice.</p>
   </section>
   <section className="request-card">
     <div className="eyebrow">PLATFORM-HELD EARNINGS</div>
@@ -246,7 +257,11 @@ export default async function HandymanDashboard() {
 {earnings.length === 0 ? <section className="request-card"><p className="privacy-note">Your completed-job earnings will appear here once payment and completion records are connected.</p></section> : <div className="job-list">{earnings.map(item => <article className="request-card" key={item.id}>
   <h3>Labour: R{item.labour_amount_zar.toLocaleString("en-ZA")}</h3>
   <div className="review-summary">
-    <div className="review-row"><small>PLATFORM COMMISSION</small><b>R{item.commission_amount_zar.toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>TOTAL COMMISSION (10%)</small><b>R{item.commission_total_zar.toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>PAID FROM ACCESS WALLET</small><b>R{item.commission_wallet_amount_zar.toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>SHORTFALL FROM THIS JOB'S EARNINGS</small><b>R{item.commission_amount_zar.toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>OLD DIRECT EFT SHORTFALL RECOVERED</small><b>R{item.commission_carryforward_deducted_zar.toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>DIRECT EFT SHORTFALL CARRIED FORWARD</small><b>R{item.commission_shortfall_zar.toLocaleString("en-ZA")}</b></div>
     <div className="review-row"><small>NET HANDYMAN EARNINGS</small><b>R{item.net_earnings_zar.toLocaleString("en-ZA")}</b></div>
     <div className="review-row"><small>PAYMENT METHOD</small><b>{item.payment_method === "direct_eft" ? "Customer direct EFT" : "Platform payment"}</b></div>
     <div className="review-row"><small>STATUS</small><b className="capitalize">{item.status.replaceAll("_", " ")}</b></div>
