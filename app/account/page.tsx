@@ -10,9 +10,6 @@ type Offer = {
   message: string | null;
   estimated_arrival_minutes: number | null;
   status: string;
-  handyman_en_route_at: string | null;
-  cancellation_reason: string | null;
-  cancellation_compensation_zar: number | null;
   created_at: string;
 };
 
@@ -25,6 +22,9 @@ type Job = {
   city: string;
   urgency: string;
   status: string;
+  handyman_en_route_at: string | null;
+  cancellation_reason: string | null;
+  cancellation_compensation_zar: number | null;
   created_at: string;
   service_categories: { name: string } | { name: string }[] | null;
   job_offers: Offer[];
