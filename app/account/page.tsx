@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import AcceptOfferButton from "@/components/accept-offer-button";
 import CancelBookingButton from "@/components/cancel-booking-button";
 import FindReplacementHandyman from "@/components/find-replacement-handyman";
+import StatusBadge from "@/components/status-badge";
 
 type Offer = {
   id: string;
@@ -77,7 +78,7 @@ export default async function AccountPage() {
         const acceptedOffer = offers.find(offer => offer.status === "accepted");
         const canChoose = job.status === "open" && !acceptedOffer;
         return <article className="request-card" key={job.id}>
-          <div className="eyebrow">{category ?? "Home service"} · <span className="capitalize">{job.status.replaceAll("_", " ")}</span></div>
+          <div className="eyebrow">{category ?? "Home service"} · <StatusBadge status={job.status} /></div>
           <h2>{job.title}</h2>
           <p>{job.description}</p>
           <p className="form-hint">{job.suburb ? job.suburb + ", " : ""}{job.city} · {job.urgency}</p>
