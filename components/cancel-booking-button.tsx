@@ -64,7 +64,7 @@ export default function CancelBookingButton({ jobId, enRoute, inProgress = false
     <h3>Cancel booking</h3>
     <p className="privacy-note">You can cancel if your plans change or you no longer wish to continue. Your cancellation takes effect as soon as you confirm.</p>
     <label className="form-label" htmlFor={`cancel-reason-${jobId}`}>Why are you cancelling?</label>
-    <select id={`cancel-reason-${jobId}`} className="form-input" value={reason} onChange={event => setReason(event.target.value)} disabled={busy}>
+    <select id={`cancel-reason-${jobId}`} className="form-input choice-select" value={reason} onChange={event => setReason(event.target.value)} disabled={busy}>
       <option value="">Choose a reason</option>
       {cancellationReasons.map(option => <option key={option} value={option}>{option}</option>)}
     </select>
