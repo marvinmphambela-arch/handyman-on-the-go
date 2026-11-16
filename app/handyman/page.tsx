@@ -82,15 +82,14 @@ export default async function HandymanDashboard() {
       <Link href="/account" className="back-link">My account</Link>
     </div></header>
     <div className="container request-shell">
-      <div className="request-heading">
+      <nav className="handyman-dashboard-nav" aria-label="Dashboard sections">
+        <a href="#dashboard-home">Home</a><a href="#new-jobs">New jobs</a><a href="#my-bookings">Bookings</a><a href="#cancellations">Cancellations</a><a href="#my-profile">Profile</a>
+      </nav>
+      <div className="request-heading" id="dashboard-home">
         <div className="eyebrow">HANDYMAN WORKSPACE</div>
         <h1>Your handyman dashboard.</h1>
         <p>See new opportunities, active bookings and important updates in one place.</p>
-        <div className="button-row">
-          <Link className="btn btn-dark" href="/handyman/verification">Identity verification</Link>
-          <Link className="btn btn-outline-dark" href="/handyman/jobs">All job opportunities</Link>
-          <Link className="btn btn-outline-dark" href="/handyman/bookings">Bookings view</Link>
-        </div>
+        <div className="button-row"><Link className="btn btn-dark" href="/handyman/verification">Identity verification</Link></div>
       </div>
 
       <section className="request-card" aria-live="polite">
@@ -99,7 +98,7 @@ export default async function HandymanDashboard() {
         <p>{profile.verification_status === "approved" ? "You are approved to receive matching job requests and submit offers." : profile.verification_status === "under_review" ? "Our team is reviewing your verification. You cannot receive job requests or submit offers until approval." : profile.verification_status === "rejected" ? "You cannot receive job requests or submit offers. Please contact support." : profile.verification_status === "suspended" ? "Your access to job requests and offers is currently paused. Please contact support." : "Your account is waiting for verification. You cannot receive job requests or submit offers until an administrator approves your account."}</p>
       </section>
 
-      <div className="section-heading"><div><div className="eyebrow">CANCELLATIONS</div><h2>Notifications ({notifications.length})</h2></div></div>
+      <div className="section-heading" id="cancellations"><div><div className="eyebrow">CANCELLATIONS</div><h2>Notifications ({notifications.length})</h2></div></div>
       {notifications.length === 0 ? <section className="request-card"><p className="privacy-note">No notifications yet. Important booking changes will appear here.</p></section> :
         <div className="job-list">{notifications.map(notification => <article className="request-card" key={notification.id}>
           <div className="eyebrow">{new Date(notification.created_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}</div>
@@ -113,7 +112,7 @@ export default async function HandymanDashboard() {
           <p className="privacy-note">The customer's exact street address is not shown in cancellation notices.</p>
         </article>)}</div>}
 
-      <div className="section-heading"><div><div className="eyebrow">YOUR WORK</div><h2>Active bookings ({bookings.length})</h2></div></div>
+      <div className="section-heading" id="my-bookings"><div><div className="eyebrow">YOUR WORK</div><h2>Active bookings ({bookings.length})</h2></div></div>
       {bookings.length === 0 ? <section className="request-card"><p className="privacy-note">No active bookings yet. When a customer accepts your offer, the booking will appear here automatically.</p></section> :
         <div className="job-list">{bookings.map(booking => <article className="request-card" key={booking.id}>
           <div className="eyebrow"><StatusBadge status={booking.status} /> · <span className="capitalize">{booking.urgency}</span></div>
@@ -126,7 +125,7 @@ export default async function HandymanDashboard() {
           {booking.status === "in_progress" ? <p className="success-note">Work is marked as in progress.</p> : booking.handyman_en_route_at ? <><p className="success-note">You marked yourself as on the way at {new Date(booking.handyman_en_route_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}.</p><StartWorkButton jobId={booking.id} /></> : <MarkEnRouteButton jobId={booking.id} />}
         </article>)}</div>}
 
-      <div className="section-heading"><div><div className="eyebrow">AVAILABLE WORK</div><h2>New opportunities ({opportunities.length})</h2></div></div>
+      <div className="section-heading" id="new-jobs"><div><div className="eyebrow">AVAILABLE WORK</div><h2>New opportunities ({opportunities.length})</h2></div></div>
       {!profile.available && <section className="request-card"><h3>You are marked unavailable.</h3><p>Switch on your availability below to receive matching job opportunities.</p></section>}
       {profile.available && opportunities.length === 0 && <section className="request-card"><p className="privacy-note">No matching open jobs right now. New requests will appear here automatically.</p></section>}
       {profile.available && opportunities.length > 0 && <div className="job-list">{opportunities.map(job => {
@@ -140,7 +139,7 @@ export default async function HandymanDashboard() {
         </article>;
       })}</div>}
 
-      <div className="section-heading"><div><div className="eyebrow">YOUR PROFILE</div><h2>Professional details</h2></div></div>
+      <div className="section-heading" id="my-profile"><div><div className="eyebrow">YOUR PROFILE</div><h2>Professional details</h2></div></div>
       <HandymanProfileForm profile={profile} />
     </div>
   </main>;
