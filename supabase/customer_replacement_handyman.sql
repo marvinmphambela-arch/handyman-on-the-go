@@ -3,6 +3,10 @@ alter table public.jobs
   add column if not exists replacement_handyman_decision text not null default 'not_offered'
   check (replacement_handyman_decision in ('not_offered', 'accepted', 'declined'));
 
+-- The customer dashboard reads this field; keep the grant column-specific.
+grant select (replacement_handyman_decision)
+  on public.jobs to authenticated;
+
 create or replace function public.reset_replacement_choice_on_cancellation()
 returns trigger
 language plpgsql
