@@ -267,6 +267,8 @@ begin
             else status
           end
       where job_id = v_commission.related_job_id;
+    else
+      exit;
     end if;
   end loop;
 
