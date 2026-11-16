@@ -10,6 +10,7 @@ type CompletionResult = {
   commission_amount_zar?: number;
   net_earnings_zar?: number;
   already_completed?: boolean;
+  commission_status?: "posted" | "pending" | "not_applicable";
 };
 
 export default function ConfirmJobCompletionButton({ jobId }: { jobId: string }) {
@@ -44,10 +45,15 @@ export default function ConfirmJobCompletionButton({ jobId }: { jobId: string })
     }
 
     const result = (data ?? {}) as CompletionResult;
+    const commissionAmount = Number(result.commission_amount_zar ?? 0).toLocaleString("en-ZA");
     setMessage(
       result.already_completed
         ? "This job was already marked completed. No additional commission was charged."
-        : `Job completed. R${Number(result.commission_amount_zar ?? 0).toLocaleString("en-ZA")} commission collected from the handyman's Access Wallet.`
+        : result.commission_status === "pending"
+          ? `Job completed. The R${commissionAmount} commission is outstanding and will be collected automatically from the handyman's next verified wallet top-up.`
+          : result.commission_status === "not_applicable"
+            ? "Job completed. No commission was due under the current platform settings."
+            : `Job completed. R${commissionAmount} commission collected from the handyman's Access Wallet.`
     );
     router.refresh();
   }
