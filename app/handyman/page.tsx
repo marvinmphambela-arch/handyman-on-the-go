@@ -95,7 +95,7 @@ export default async function HandymanDashboard() {
         <p>{profile.verification_status === "approved" ? "You are approved to receive matching job requests and submit offers." : profile.verification_status === "under_review" ? "Our team is reviewing your verification. You cannot receive job requests or submit offers until approval." : profile.verification_status === "rejected" ? "You cannot receive job requests or submit offers. Please contact support." : profile.verification_status === "suspended" ? "Your access to job requests and offers is currently paused. Please contact support." : "Your account is waiting for verification. You cannot receive job requests or submit offers until an administrator approves your account."}</p>
       </section>
 
-      <div className="section-heading"><div><div className="eyebrow">LIVE UPDATES</div><h2>Notifications ({notifications.length})</h2></div></div>
+      <div className="section-heading"><div><div className="eyebrow">CANCELLATIONS</div><h2>Notifications ({notifications.length})</h2></div></div>
       {notifications.length === 0 ? <section className="request-card"><p className="privacy-note">No notifications yet. Important booking changes will appear here.</p></section> :
         <div className="job-list">{notifications.map(notification => <article className="request-card" key={notification.id}>
           <div className="eyebrow">{new Date(notification.created_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}</div>
