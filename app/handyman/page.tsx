@@ -76,9 +76,17 @@ export default async function HandymanDashboard() {
       .limit(10)
   ]);
 
-  const rejectedJobIds = new Set((rejectedOffersResult.data ?? []).map(offer => offer.job_id));
+  const rejectedJobIds = [...new Set((rejectedOffersResult.data ?? []).map(offer => offer.job_id))];
+  const rejectedJobsResult = rejectedJobIds.length > 0
+    ? await supabase.from("jobs")
+        .select("id, title, description, suburb, city, urgency, created_at, service_categories(name)")
+        .in("id", rejectedJobIds)
+        .order("created_at", { ascending: false })
+    : { data: [] as DashboardJob[] };
+  const rejectedJobs = (rejectedJobsResult.data ?? []) as DashboardJob[];
+  const rejectedJobIdSet = new Set(rejectedJobIds);
   const opportunities = ((opportunitiesResult.data ?? []) as DashboardJob[])
-    .filter(job => !rejectedJobIds.has(job.id));
+    .filter(job => !rejectedJobIdSet.has(job.id));
   const bookings = (bookingsResult.data ?? []) as ActiveBooking[];
   const notifications = (notificationsResult.data ?? []) as HandymanNotification[];
 
@@ -132,6 +140,17 @@ export default async function HandymanDashboard() {
           <p className="privacy-note">This address is visible only because your offer was accepted for this booking. Keep it private.</p>
           {booking.status === "in_progress" ? <p className="success-note">Work is marked as in progress.</p> : booking.handyman_en_route_at ? <><p className="success-note">You marked yourself as on the way at {new Date(booking.handyman_en_route_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}.</p><StartWorkButton jobId={booking.id} /></> : <MarkEnRouteButton jobId={booking.id} />}
         </article>)}</div>}
+      <div className="section-heading"><div><div className="eyebrow">PREVIOUSLY DECLINED</div><h2>Jobs you declined ({rejectedJobs.length})</h2></div></div>
+      {rejectedJobs.length === 0 ? <section className="request-card"><p className="privacy-note">Jobs you decline will be listed here for your reference.</p></section> :
+        <div className="job-list">{rejectedJobs.map(job => {
+          const category = Array.isArray(job.service_categories) ? job.service_categories[0]?.name : job.service_categories?.name;
+          return <article className="request-card" key={job.id}>
+            <div className="eyebrow"><StatusBadge status="rejected" /> · {category ?? "Home service"}</div>
+            <h3>{job.title}</h3><p>{job.description}</p>
+            <p className="form-hint">{job.suburb ? job.suburb + ", " : ""}{job.city}</p>
+            <p className="privacy-note">You previously declined this job. It is shown here for reference only and is not available for a new offer.</p>
+          </article>;
+        })}</div>}
         </>}
         cancellations={<>
 <div className="section-heading" id="cancellations"><div><div className="eyebrow">CANCELLATIONS</div><h2>Notifications ({notifications.length})</h2></div></div>
