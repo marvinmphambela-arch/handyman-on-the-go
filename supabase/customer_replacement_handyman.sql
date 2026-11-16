@@ -3,6 +3,25 @@ alter table public.jobs
   add column if not exists replacement_handyman_decision text not null default 'not_offered'
   check (replacement_handyman_decision in ('not_offered', 'accepted', 'declined'));
 
+create or replace function public.reset_replacement_choice_on_cancellation()
+returns trigger
+language plpgsql
+set search_path = ''
+as $
+begin
+  if new.status = 'cancelled'::public.job_status
+     and old.status is distinct from new.status then
+    new.replacement_handyman_decision := 'not_offered';
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists reset_replacement_choice_on_cancellation on public.jobs;
+create trigger reset_replacement_choice_on_cancellation
+before update of status on public.jobs
+for each row execute function public.reset_replacement_choice_on_cancellation();
+
 create or replace function public.customer_decide_replacement_handyman(
   p_job_id uuid,
   p_find_another boolean
