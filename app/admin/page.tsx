@@ -25,7 +25,7 @@ export default async function AdminDashboard() {
     .select("handyman_id, id_document_path, selfie_path, status, submitted_at, profiles!handyman_verification_submissions_handyman_id_fkey(full_name, phone)")
     .order("submitted_at", { ascending: true });
 
-  const submissions = (data ?? []) as Submission[];
+  const submissions = (data ?? []) as unknown as Submission[];
   const pending = submissions.filter(item => item.status === "under_review");
 
   const documents = await Promise.all(submissions.map(async item => {
