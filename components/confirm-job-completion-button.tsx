@@ -23,6 +23,7 @@ export default function ConfirmJobCompletionButton({ jobId }: { jobId: string })
   const returnedJobId = searchParams.get("job_id");
   const paymentReturn = returnedJobId === jobId ? searchParams.get("job_payment") : null;
   const paymentVerified = paymentReturn === "verified";
+  const paymentNeedsReview = ["duplicate", "refund_required"].includes(paymentReturn || "");
 
   async function finishCompletion(method: PaymentMethod) {
     if (busy) return;
@@ -138,7 +139,7 @@ export default function ConfirmJobCompletionButton({ jobId }: { jobId: string })
       )}
       {error && <p className="form-error" role="alert">{error}</p>}
       {message && <p className="success-note" role="status">{message}</p>}
-      <button type="button" className="btn btn-orange" onClick={handleAction} disabled={busy}>
+      <button type="button" className="btn btn-orange" onClick={handleAction} disabled={busy || paymentNeedsReview}>
         {busy
           ? paymentMethod === "platform" && !paymentVerified ? "Connecting to Paystack..." : "Confirming..."
           : paymentMethod === "platform" && !paymentVerified ? "Pay with Paystack"
