@@ -140,7 +140,7 @@ export default async function HandymanDashboard() {
           <p className="privacy-note">This address is visible only because your offer was accepted for this booking. Keep it private.</p>
           {booking.status === "in_progress" ? <p className="success-note">Work is marked as in progress.</p> : booking.handyman_en_route_at ? <><p className="success-note">You marked yourself as on the way at {new Date(booking.handyman_en_route_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}.</p><StartWorkButton jobId={booking.id} /></> : <MarkEnRouteButton jobId={booking.id} />}
         </article>)}</div>}
-      <div className="section-heading"><div><div className="eyebrow">PREVIOUSLY DECLINED</div><h2>Jobs you declined ({rejectedJobs.length})</h2></div></div>
+      <div className="section-heading"><div><div className="eyebrow">PREVIOUS OFFERS</div><h2>Previous offers ({rejectedJobs.length})</h2></div></div>
       {rejectedJobs.length === 0 ? <section className="request-card"><p className="privacy-note">Jobs you decline will be listed here for your reference.</p></section> :
         <div className="job-list">{rejectedJobs.map(job => {
           const category = Array.isArray(job.service_categories) ? job.service_categories[0]?.name : job.service_categories?.name;
