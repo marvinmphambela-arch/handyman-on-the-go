@@ -31,6 +31,39 @@ export async function POST(request: Request) {
     }
 
     const admin = createAdminClient();
+    const metadata = payment.metadata || {};
+
+    // Customer job payments are matched against the server-created payment row.
+    // The database RPC is idempotent and arbitrates late/duplicate successful attempts.
+    if (metadata.purpose === "customer_job_payment") {
+      const { data: pending, error: lookupError } = await admin
+        .from("customer_job_payments")
+        .select("id, job_id, customer_id, handyman_id, amount_zar, currency")
+        .eq("payment_reference", reference)
+        .maybeSingle();
+      if (lookupError) throw lookupError;
+
+      if (!pending ||
+          pending.id !== metadata.payment_id ||
+          pending.job_id !== metadata.job_id ||
+          pending.customer_id !== metadata.customer_id ||
+          pending.handyman_id !== metadata.handyman_id ||
+          pending.currency !== "ZAR" ||
+          payment.amount !== pending.amount_zar * 100 ||
+          Number(metadata.amount_zar) !== pending.amount_zar) {
+        return NextResponse.json({ received: true });
+      }
+
+      const { data: result, error: recordError } = await admin.rpc("record_verified_customer_job_payment", {
+        p_reference: reference,
+        p_amount_zar: pending.amount_zar,
+        p_currency: "ZAR"
+      });
+      if (recordError) throw recordError;
+      return NextResponse.json({ received: true, jobPayment: result });
+    }
+
+    // Existing Access Wallet top-up webhook remains unchanged.
     const { data: pending, error: lookupError } = await admin
       .from("handyman_access_wallet_transactions")
       .select("handyman_id, amount_zar, status")
@@ -42,7 +75,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true });
     }
 
-    const metadata = payment.metadata || {};
     if (metadata.purpose !== "handyman_access_wallet_topup" ||
         metadata.handyman_id !== pending.handyman_id ||
         Number(metadata.amount_zar) !== pending.amount_zar) {
