@@ -7,6 +7,7 @@ import MarkEnRouteButton from "@/components/mark-en-route-button";
 import StartWorkButton from "@/components/start-work-button";
 import RealtimeRefresh from "@/components/realtime-refresh";
 import StatusBadge from "@/components/status-badge";
+import HandymanDashboardTabs from "@/components/handyman-dashboard-tabs";
 
 type DashboardJob = {
   id: string;
@@ -82,10 +83,9 @@ export default async function HandymanDashboard() {
       <Link href="/account" className="back-link">My account</Link>
     </div></header>
     <div className="container request-shell">
-      <nav className="handyman-dashboard-nav" aria-label="Dashboard sections">
-        <a href="#dashboard-home">Home</a><a href="#new-jobs">New jobs</a><a href="#my-bookings">Bookings</a><a href="#cancellations">Cancellations</a><a href="#my-profile">Profile</a>
-      </nav>
-      <div className="request-heading" id="dashboard-home">
+      <HandymanDashboardTabs
+        home={<>
+<div className="request-heading" id="dashboard-home">
         <div className="eyebrow">HANDYMAN WORKSPACE</div>
         <h1>Your handyman dashboard.</h1>
         <p>See new opportunities, active bookings and important updates in one place.</p>
@@ -97,35 +97,9 @@ export default async function HandymanDashboard() {
         <h2>{profile.verification_status === "approved" ? "Your account is approved" : profile.verification_status === "under_review" ? "Your documents are under review" : profile.verification_status === "rejected" ? "Your application was not approved" : profile.verification_status === "suspended" ? "Your account is suspended" : "Verification is pending"}</h2>
         <p>{profile.verification_status === "approved" ? "You are approved to receive matching job requests and submit offers." : profile.verification_status === "under_review" ? "Our team is reviewing your verification. You cannot receive job requests or submit offers until approval." : profile.verification_status === "rejected" ? "You cannot receive job requests or submit offers. Please contact support." : profile.verification_status === "suspended" ? "Your access to job requests and offers is currently paused. Please contact support." : "Your account is waiting for verification. You cannot receive job requests or submit offers until an administrator approves your account."}</p>
       </section>
-
-      <div className="section-heading" id="cancellations"><div><div className="eyebrow">CANCELLATIONS</div><h2>Notifications ({notifications.length})</h2></div></div>
-      {notifications.length === 0 ? <section className="request-card"><p className="privacy-note">No notifications yet. Important booking changes will appear here.</p></section> :
-        <div className="job-list">{notifications.map(notification => <article className="request-card" key={notification.id}>
-          <div className="eyebrow">{new Date(notification.created_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}</div>
-          <h3>{notification.title}</h3><p>{notification.message}</p>
-          <div className="review-summary">
-            <div className="review-row"><small>JOB</small><b>{notification.job_title || "Job details unavailable"}</b></div>
-            <div className="review-row"><small>SERVICE</small><b>{notification.service_name || "Not recorded"}</b></div>
-            <div className="review-row"><small>CUSTOMER'S REASON</small><b>{notification.cancellation_reason || "No reason was recorded."}</b></div>
-            <div className="review-row"><small>CALL-OUT COMPENSATION RECORDED</small><b>{notification.compensation_zar && notification.compensation_zar > 0 ? `R${notification.compensation_zar.toLocaleString("en-ZA")}` : "R0 — none recorded"}</b></div>
-          </div>
-          <p className="privacy-note">The customer's exact street address is not shown in cancellation notices.</p>
-        </article>)}</div>}
-
-      <div className="section-heading" id="my-bookings"><div><div className="eyebrow">YOUR WORK</div><h2>Active bookings ({bookings.length})</h2></div></div>
-      {bookings.length === 0 ? <section className="request-card"><p className="privacy-note">No active bookings yet. When a customer accepts your offer, the booking will appear here automatically.</p></section> :
-        <div className="job-list">{bookings.map(booking => <article className="request-card" key={booking.id}>
-          <div className="eyebrow"><StatusBadge status={booking.status} /> · <span className="capitalize">{booking.urgency}</span></div>
-          <h2>{booking.title}</h2><p>{booking.description}</p>
-          <div className="review-summary">
-            <div className="review-row"><small>EXACT JOB ADDRESS</small><b>{booking.street_address || "The customer has not supplied a street address."}</b></div>
-            <div className="review-row"><small>AREA</small><b>{booking.suburb ? booking.suburb + ", " : ""}{booking.city}</b></div>
-          </div>
-          <p className="privacy-note">This address is visible only because your offer was accepted for this booking. Keep it private.</p>
-          {booking.status === "in_progress" ? <p className="success-note">Work is marked as in progress.</p> : booking.handyman_en_route_at ? <><p className="success-note">You marked yourself as on the way at {new Date(booking.handyman_en_route_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}.</p><StartWorkButton jobId={booking.id} /></> : <MarkEnRouteButton jobId={booking.id} />}
-        </article>)}</div>}
-
-      <div className="section-heading" id="new-jobs"><div><div className="eyebrow">AVAILABLE WORK</div><h2>New opportunities ({opportunities.length})</h2></div></div>
+        </>}
+        jobs={<>
+<div className="section-heading" id="new-jobs"><div><div className="eyebrow">AVAILABLE WORK</div><h2>New opportunities ({opportunities.length})</h2></div></div>
       {!profile.available && <section className="request-card"><h3>You are marked unavailable.</h3><p>Switch on your availability below to receive matching job opportunities.</p></section>}
       {profile.available && opportunities.length === 0 && <section className="request-card"><p className="privacy-note">No matching open jobs right now. New requests will appear here automatically.</p></section>}
       {profile.available && opportunities.length > 0 && <div className="job-list">{opportunities.map(job => {
@@ -138,9 +112,41 @@ export default async function HandymanDashboard() {
           <HandymanOfferForm jobId={job.id} />
         </article>;
       })}</div>}
-
-      <div className="section-heading" id="my-profile"><div><div className="eyebrow">YOUR PROFILE</div><h2>Professional details</h2></div></div>
+        </>}
+        bookings={<>
+<div className="section-heading" id="my-bookings"><div><div className="eyebrow">YOUR WORK</div><h2>Active bookings ({bookings.length})</h2></div></div>
+      {bookings.length === 0 ? <section className="request-card"><p className="privacy-note">No active bookings yet. When a customer accepts your offer, the booking will appear here automatically.</p></section> :
+        <div className="job-list">{bookings.map(booking => <article className="request-card" key={booking.id}>
+          <div className="eyebrow"><StatusBadge status={booking.status} /> · <span className="capitalize">{booking.urgency}</span></div>
+          <h2>{booking.title}</h2><p>{booking.description}</p>
+          <div className="review-summary">
+            <div className="review-row"><small>EXACT JOB ADDRESS</small><b>{booking.street_address || "The customer has not supplied a street address."}</b></div>
+            <div className="review-row"><small>AREA</small><b>{booking.suburb ? booking.suburb + ", " : ""}{booking.city}</b></div>
+          </div>
+          <p className="privacy-note">This address is visible only because your offer was accepted for this booking. Keep it private.</p>
+          {booking.status === "in_progress" ? <p className="success-note">Work is marked as in progress.</p> : booking.handyman_en_route_at ? <><p className="success-note">You marked yourself as on the way at {new Date(booking.handyman_en_route_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}.</p><StartWorkButton jobId={booking.id} /></> : <MarkEnRouteButton jobId={booking.id} />}
+        </article>)}</div>}
+        </>}
+        cancellations={<>
+<div className="section-heading" id="cancellations"><div><div className="eyebrow">CANCELLATIONS</div><h2>Notifications ({notifications.length})</h2></div></div>
+      {notifications.length === 0 ? <section className="request-card"><p className="privacy-note">No notifications yet. Important booking changes will appear here.</p></section> :
+        <div className="job-list">{notifications.map(notification => <article className="request-card" key={notification.id}>
+          <div className="eyebrow">{new Date(notification.created_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}</div>
+          <h3>{notification.title}</h3><p>{notification.message}</p>
+          <div className="review-summary">
+            <div className="review-row"><small>JOB</small><b>{notification.job_title || "Job details unavailable"}</b></div>
+            <div className="review-row"><small>SERVICE</small><b>{notification.service_name || "Not recorded"}</b></div>
+            <div className="review-row"><small>CUSTOMER'S REASON</small><b>{notification.cancellation_reason || "No reason was recorded."}</b></div>
+            <div className="review-row"><small>CALL-OUT COMPENSATION RECORDED</small><b>{notification.compensation_zar && notification.compensation_zar > 0 ? `R${notification.compensation_zar.toLocaleString("en-ZA")}` : "R0 — none recorded"}</b></div>
+          </div>
+          <p className="privacy-note">The customer's exact street address is not shown in cancellation notices.</p>
+        </article>)}</div>}
+        </>}
+        profile={<>
+<div className="section-heading" id="my-profile"><div><div className="eyebrow">YOUR PROFILE</div><h2>Professional details</h2></div></div>
       <HandymanProfileForm profile={profile} />
+        </>}
+      />
     </div>
   </main>;
 }
