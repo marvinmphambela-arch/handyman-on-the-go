@@ -126,9 +126,9 @@ export default function ConfirmJobCompletionButton({ jobId }: { jobId: string })
           Paystack has verified your payment. Please confirm that the work is complete to finish this job.
         </p>
       )}
-      {paymentMethod === "platform" && paymentReturn === "duplicate" && (
+      {paymentMethod === "platform" && ["duplicate", "refund_required"].includes(paymentReturn || "") && (
         <p className="form-error" role="alert">
-          This checkout was paid after another payment had already succeeded. Please contact support so the duplicate payment can be reviewed for refund.
+          Paystack received this payment, but it could not be applied to the job. Please contact support so the payment can be reviewed for a refund.
         </p>
       )}
       {paymentMethod === "platform" && ["failed", "error"].includes(paymentReturn || "") && (
