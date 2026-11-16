@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   const destination = new URL("/handyman", siteUrl);
   destination.searchParams.set("section", "earnings");
 
-  if (!reference || !/^[a-zA-Z0-9_=\-]{8,100}$/.test(reference)) {
+  if (!reference || !/^[a-zA-Z0-9_.=\-]{8,100}$/.test(reference)) {
     destination.searchParams.set("topup", "invalid");
     return NextResponse.redirect(destination);
   }
