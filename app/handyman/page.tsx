@@ -33,6 +33,37 @@ type ActiveBooking = {
   created_at: string;
 };
 
+type WalletTransaction = {
+  id: string;
+  transaction_type: string;
+  direction: string;
+  amount_zar: number;
+  status: string;
+  description: string | null;
+  created_at: string;
+};
+
+type EarningsRecord = {
+  id: string;
+  job_id: string;
+  labour_amount_zar: number;
+  commission_amount_zar: number;
+  net_earnings_zar: number;
+  payment_method: string;
+  status: string;
+  completed_at: string;
+};
+
+type PayoutRecord = {
+  id: string;
+  payout_type: string;
+  gross_amount_zar: number;
+  fee_amount_zar: number;
+  net_amount_zar: number;
+  status: string;
+  requested_at: string;
+};
+
 type HandymanNotification = {
   id: string;
   title: string;
@@ -57,7 +88,7 @@ export default async function HandymanDashboard() {
 
   if (profile?.role !== "handyman") redirect("/account");
 
-  const [opportunitiesResult, rejectedOffersResult, bookingsResult, notificationsResult] = await Promise.all([
+  const [opportunitiesResult, rejectedOffersResult, bookingsResult, notificationsResult, walletResult, walletTransactionsResult, earningsResult, payoutsResult] = await Promise.all([
     supabase.from("jobs")
       .select("id, title, description, suburb, city, urgency, created_at, service_categories(name)")
       .eq("status", "open")
@@ -73,7 +104,11 @@ export default async function HandymanDashboard() {
     supabase.from("handyman_notifications")
       .select("id, title, message, job_title, service_name, cancellation_reason, compensation_zar, created_at")
       .order("created_at", { ascending: false })
-      .limit(10)
+      .limit(10),
+    supabase.from("handyman_access_wallets").select("balance_zar").eq("handyman_id", user.id).maybeSingle(),
+    supabase.from("handyman_access_wallet_transactions").select("id, transaction_type, direction, amount_zar, status, description, created_at").eq("handyman_id", user.id).order("created_at", { ascending: false }).limit(10),
+    supabase.from("handyman_earnings").select("id, job_id, labour_amount_zar, commission_amount_zar, net_earnings_zar, payment_method, status, completed_at").eq("handyman_id", user.id).order("completed_at", { ascending: false }).limit(20),
+    supabase.from("handyman_payout_requests").select("id, payout_type, gross_amount_zar, fee_amount_zar, net_amount_zar, status, requested_at").eq("handyman_id", user.id).order("requested_at", { ascending: false }).limit(10)
   ]);
 
   const rejectedJobIds = [...new Set((rejectedOffersResult.data ?? []).map(offer => offer.job_id))];
@@ -89,6 +124,13 @@ export default async function HandymanDashboard() {
     .filter(job => !rejectedJobIdSet.has(job.id));
   const bookings = (bookingsResult.data ?? []) as ActiveBooking[];
   const notifications = (notificationsResult.data ?? []) as HandymanNotification[];
+  const accessWalletBalance = walletResult.data?.balance_zar ?? 0;
+  const walletTransactions = (walletTransactionsResult.data ?? []) as WalletTransaction[];
+  const earnings = (earningsResult.data ?? []) as EarningsRecord[];
+  const payouts = (payoutsResult.data ?? []) as PayoutRecord[];
+  const platformHeldEarnings = earnings.filter(item => ["held", "available"].includes(item.status) && item.payment_method === "platform").reduce((sum, item) => sum + item.net_earnings_zar, 0);
+  const paidEarnings = earnings.filter(item => item.status === "paid").reduce((sum, item) => sum + item.net_earnings_zar, 0);
+  const directEftEarnings = earnings.filter(item => item.payment_method === "direct_eft").reduce((sum, item) => sum + item.net_earnings_zar, 0);
 
   return <main className="request-page">
     <RealtimeRefresh />
@@ -166,6 +208,65 @@ export default async function HandymanDashboard() {
           </div>
           <p className="privacy-note">The customer's exact street address is not shown in cancellation notices.</p>
         </article>)}</div>}
+        </>}
+        earnings={<>
+<div className="section-heading"><div><div className="eyebrow">YOUR MONEY</div><h2>Earnings &amp; Access Wallet</h2></div></div>
+<div className="job-list">
+  <section className="request-card">
+    <div className="eyebrow">PREPAID ACCESS WALLET</div>
+    <h2>R{accessWalletBalance.toLocaleString("en-ZA")}</h2>
+    <p>Used for the platform commission after a job is successfully completed. Minimum top-up R100. Keep at least R10 in this wallet to submit offers.</p>
+    <p className="privacy-note">Wallet top-ups are not active yet. No money has been added or deducted by this screen.</p>
+  </section>
+  <section className="request-card">
+    <div className="eyebrow">PLATFORM-HELD EARNINGS</div>
+    <h2>R{platformHeldEarnings.toLocaleString("en-ZA")}</h2>
+    <p>Net earnings recorded for jobs paid through the platform and held or available for payout.</p>
+  </section>
+  <section className="request-card">
+    <div className="eyebrow">PAID EARNINGS</div>
+    <h2>R{paidEarnings.toLocaleString("en-ZA")}</h2>
+    <p>Platform-held earnings recorded as paid to you.</p>
+  </section>
+  <section className="request-card">
+    <div className="eyebrow">DIRECT EFT EARNINGS</div>
+    <h2>R{directEftEarnings.toLocaleString("en-ZA")}</h2>
+    <p>Recorded separately. These payments are made by customers directly to you and are not part of platform-held payouts.</p>
+  </section>
+</div>
+<div className="section-heading"><div><div className="eyebrow">ACCESS WALLET ACTIVITY</div><h2>Recent transactions</h2></div></div>
+{walletTransactions.length === 0 ? <section className="request-card"><p className="privacy-note">No Access Wallet transactions yet.</p></section> : <div className="job-list">{walletTransactions.map(item => <article className="request-card" key={item.id}>
+  <div className="eyebrow">{new Date(item.created_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}</div>
+  <h3>{item.description || item.transaction_type.replaceAll("_", " ")}</h3>
+  <p>{item.direction === "credit" ? "+" : "−"}R{item.amount_zar.toLocaleString("en-ZA")} · <span className="capitalize">{item.status}</span></p>
+</article>)}</div>}
+<div className="section-heading"><div><div className="eyebrow">JOB EARNINGS</div><h2>Recent completed jobs</h2></div></div>
+{earnings.length === 0 ? <section className="request-card"><p className="privacy-note">Your completed-job earnings will appear here once payment and completion records are connected.</p></section> : <div className="job-list">{earnings.map(item => <article className="request-card" key={item.id}>
+  <h3>Labour: R{item.labour_amount_zar.toLocaleString("en-ZA")}</h3>
+  <div className="review-summary">
+    <div className="review-row"><small>PLATFORM COMMISSION</small><b>R{item.commission_amount_zar.toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>NET HANDYMAN EARNINGS</small><b>R{item.net_earnings_zar.toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>PAYMENT METHOD</small><b>{item.payment_method === "direct_eft" ? "Customer direct EFT" : "Platform payment"}</b></div>
+    <div className="review-row"><small>STATUS</small><b className="capitalize">{item.status.replaceAll("_", " ")}</b></div>
+  </div>
+</article>)}</div>}
+<div className="section-heading"><div><div className="eyebrow">PAYOUT HISTORY</div><h2>Withdrawals and payouts</h2></div></div>
+{payouts.length === 0 ? <section className="request-card"><p className="privacy-note">No payout requests yet. Weekly payouts are planned for Monday. Instant withdrawals carry a 2% fee, with a R5 minimum fee and no minimum withdrawal amount.</p></section> : <div className="job-list">{payouts.map(item => <article className="request-card" key={item.id}>
+  <h3>{item.payout_type === "instant" ? "Instant withdrawal" : "Weekly payout"}</h3>
+  <p>Requested {new Date(item.requested_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}</p>
+  <div className="review-summary">
+    <div className="review-row"><small>GROSS</small><b>R{item.gross_amount_zar.toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>FEE</small><b>R{item.fee_amount_zar.toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>NET PAYOUT</small><b>R{item.net_amount_zar.toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>STATUS</small><b className="capitalize">{item.status}</b></div>
+  </div>
+</article>)}</div>}
+<section className="request-card">
+  <div className="eyebrow">PAYOUT SETTINGS</div>
+  <h3>Weekly payout: Monday</h3>
+  <p>Instant withdrawal fee: 2% of the amount, with a minimum fee of R5. There is no minimum withdrawal amount.</p>
+  <p className="privacy-note">Top-ups, commission deductions, and withdrawals will be enabled only after secure payment processing is connected.</p>
+</section>
         </>}
         profile={<>
 <div className="section-heading" id="my-profile"><div><div className="eyebrow">YOUR PROFILE</div><h2>Professional details</h2></div></div>
