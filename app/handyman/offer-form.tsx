@@ -99,7 +99,7 @@ export default function HandymanOfferForm({ jobId }: { jobId: string }) {
     <label className="field-label" htmlFor={`offer-message-${jobId}`}>Message to the customer (optional)</label>
     <textarea id={`offer-message-${jobId}`} rows={3} maxLength={500} value={message} onChange={e => setMessage(e.target.value)} placeholder="Briefly explain what your price includes." />
     <label className="field-label" htmlFor={`offer-arrival-${jobId}`}>Estimated arrival</label>
-    <select id={`offer-arrival-${jobId}`} required value={arrival} onChange={e => setArrival(e.target.value)}>
+    <select className="choice-select" id={`offer-arrival-${jobId}`} required value={arrival} onChange={e => setArrival(e.target.value)}>
       <option value="15">15 minutes</option>
       <option value="30">30 minutes</option>
       <option value="45">45 minutes</option>
