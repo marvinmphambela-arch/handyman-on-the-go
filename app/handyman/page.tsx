@@ -8,6 +8,7 @@ import StartWorkButton from "@/components/start-work-button";
 import RealtimeRefresh from "@/components/realtime-refresh";
 import StatusBadge from "@/components/status-badge";
 import HandymanDashboardTabs from "@/components/handyman-dashboard-tabs";
+import AccessWalletTopup from "@/components/access-wallet-topup";
 
 type DashboardJob = {
   id: string;
@@ -216,7 +217,8 @@ export default async function HandymanDashboard() {
     <div className="eyebrow">PREPAID ACCESS WALLET</div>
     <h2>R{accessWalletBalance.toLocaleString("en-ZA")}</h2>
     <p>Used for the platform commission after a job is successfully completed. Minimum top-up R100. Keep at least R10 in this wallet to submit offers.</p>
-    <p className="privacy-note">Wallet top-ups are not active yet. No money has been added or deducted by this screen.</p>
+    <p className="privacy-note">Top-ups are processed securely through Paystack. Your wallet is credited only after the payment is verified.</p>
+    <AccessWalletTopup />
   </section>
   <section className="request-card">
     <div className="eyebrow">PLATFORM-HELD EARNINGS</div>
@@ -265,7 +267,7 @@ export default async function HandymanDashboard() {
   <div className="eyebrow">PAYOUT SETTINGS</div>
   <h3>Weekly payout: Monday</h3>
   <p>Instant withdrawal fee: 2% of the amount, with a minimum fee of R5. There is no minimum withdrawal amount.</p>
-  <p className="privacy-note">Top-ups, commission deductions, and withdrawals will be enabled only after secure payment processing is connected.</p>
+  <p className="privacy-note">Top-ups are being tested in Paystack test mode. Commission deductions and withdrawals are not enabled yet.</p>
 </section>
         </>}
         profile={<>
