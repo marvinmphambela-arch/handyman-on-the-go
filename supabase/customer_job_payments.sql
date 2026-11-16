@@ -13,7 +13,7 @@ create table if not exists public.customer_job_payments (
   currency text not null default 'ZAR' check (currency = 'ZAR'),
   payment_reference text not null unique,
   status text not null default 'pending'
-    check (status in ('pending', 'abandoned', 'failed', 'paid', 'duplicate_paid')),
+    check (status in ('pending', 'abandoned', 'failed', 'paid', 'duplicate_paid', 'refund_required')),
   created_at timestamptz not null default now(),
   paid_at timestamptz,
   updated_at timestamptz not null default now()
@@ -77,11 +77,31 @@ begin
   -- Serialise successful attempts for a job, including late settlement of an abandoned attempt.
   perform 1 from public.jobs where id = v_payment.job_id for update;
 
+  -- If the booking changed while checkout was open, do not apply the payment to earnings.
+  if not exists (
+    select 1
+    from public.jobs j
+    join public.job_offers o on o.job_id = j.id and o.status = 'accepted'::public.offer_status
+    where j.id = v_payment.job_id
+      and j.customer_id = v_payment.customer_id
+      and j.status = 'in_progress'::public.job_status
+      and o.handyman_id = v_payment.handyman_id
+      and o.amount_zar = v_payment.amount_zar
+  ) then
+    update public.customer_job_payments
+    set status = 'refund_required', paid_at = now(), updated_at = now()
+    where id = v_payment.id;
+    return 'refund_required';
+  end if;
+
   if v_payment.status = 'paid' then
     return 'paid';
   end if;
   if v_payment.status = 'duplicate_paid' then
     return 'duplicate_paid';
+  end if;
+  if v_payment.status = 'refund_required' then
+    return 'refund_required';
   end if;
   if v_payment.status = 'failed' then
     raise exception 'This payment attempt was marked failed and cannot be credited';
