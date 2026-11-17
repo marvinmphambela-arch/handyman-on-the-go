@@ -242,9 +242,9 @@ export default async function HandymanDashboard() {
     <p>Platform-held earnings recorded as paid to you.</p>
   </section>
   <section className="request-card">
-    <div className="eyebrow">DIRECT EFT EARNINGS</div>
+    <div className="eyebrow">DIRECT PAYMENT EARNINGS</div>
     <h2>R{directEftEarnings.toLocaleString("en-ZA")}</h2>
-    <p>Recorded separately. These payments are made by customers directly to you and are not part of platform-held payouts.</p>
+    <p>Recorded separately. These payments are made directly to you by customers and are not part of platform-held payouts.</p>
   </section>
 </div>
 <div className="section-heading"><div><div className="eyebrow">ACCESS WALLET ACTIVITY</div><h2>Recent transactions</h2></div></div>
@@ -263,7 +263,7 @@ export default async function HandymanDashboard() {
     <div className="review-row"><small>OLD DIRECT EFT SHORTFALL RECOVERED</small><b>R{item.commission_carryforward_deducted_zar.toLocaleString("en-ZA")}</b></div>
     <div className="review-row"><small>DIRECT EFT SHORTFALL CARRIED FORWARD</small><b>R{item.commission_shortfall_zar.toLocaleString("en-ZA")}</b></div>
     <div className="review-row"><small>NET HANDYMAN EARNINGS</small><b>R{item.net_earnings_zar.toLocaleString("en-ZA")}</b></div>
-    <div className="review-row"><small>PAYMENT METHOD</small><b>{item.payment_method === "direct_eft" ? "Customer direct EFT" : "Platform payment"}</b></div>
+    <div className="review-row"><small>PAYMENT METHOD</small><b>{item.payment_method === "direct_eft" ? "Direct payment" : "Platform payment"}</b></div>
     <div className="review-row"><small>STATUS</small><b className="capitalize">{item.status.replaceAll("_", " ")}</b></div>
   </div>
 </article>)}</div>}
