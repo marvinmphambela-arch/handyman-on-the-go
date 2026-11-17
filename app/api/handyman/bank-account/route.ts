@@ -89,7 +89,13 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Check the bank, account holder, account type and account number details." }, { status: 400 });
     }
 
-    diagnosticStage = "encryption";
+    diagnosticStage = "encryption_key_format";
+    const configuredEncryptionKey = process.env.BANK_ACCOUNT_ENCRYPTION_KEY;
+    if (!configuredEncryptionKey || !/^[a-f0-9]{64}$/i.test(configuredEncryptionKey)) {
+      throw new Error("Bank account encryption key is missing or has an invalid format.");
+    }
+
+    diagnosticStage = "encryption_crypto";
     const ciphertext = encryptBankAccountNumber(accountNumber);
 
     diagnosticStage = "admin_client";
