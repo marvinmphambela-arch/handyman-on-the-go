@@ -226,99 +226,81 @@ export default async function HandymanDashboard() {
         </article>)}</div>}
         </>}
         earnings={<>
-<div className="section-heading"><div><div className="eyebrow">YOUR MONEY</div><h2>Earnings &amp; Access Wallet</h2></div></div>
-<section className="request-card">
+<div className="section-heading"><div><div className="eyebrow">YOUR MONEY</div><h2>Earnings</h2></div></div>
+<section className="request-card earnings-week-card">
   <div className="eyebrow">THIS WEEK · MONDAY TO SUNDAY</div>
   <h2>R{Number(earningsSummary.week_total_zar ?? 0).toLocaleString("en-ZA")}</h2>
-  <p>Net earnings recorded from jobs completed this week, including platform payments and Direct Payments.</p>
-  <div className="review-summary">
-    <div className="review-row"><small>PLATFORM PAYMENT</small><b>R{Number(earningsSummary.week_platform_zar ?? 0).toLocaleString("en-ZA")}</b></div>
-    <div className="review-row"><small>DIRECT PAYMENT</small><b>R{Number(earningsSummary.week_direct_zar ?? 0).toLocaleString("en-ZA")}</b></div>
+  <div className="earnings-week-split">
+    <div><small>PLATFORM</small><b>R{Number(earningsSummary.week_platform_zar ?? 0).toLocaleString("en-ZA")}</b></div>
+    <div><small>DIRECT</small><b>R{Number(earningsSummary.week_direct_zar ?? 0).toLocaleString("en-ZA")}</b></div>
   </div>
-  <div style={{display:"grid",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:"9px",alignItems:"end",height:"150px",marginTop:"24px"}}>
-    {weeklyDaily.map((day, index) => <div key={day.day} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"end",height:"100%",gap:"7px"}}>
-      <small style={{fontSize:"9px",color:"#667579"}}>R{Math.round(Number(day.total_zar || 0)).toLocaleString("en-ZA")}</small>
-      <div title={`R${Number(day.total_zar || 0).toLocaleString("en-ZA")}`} style={{width:"100%",maxWidth:"34px",height:`${Math.max(5,Number(day.total_zar || 0)/weeklyMax*92)}px`,background:"#f58220",borderRadius:"7px 7px 2px 2px"}} />
-      <small style={{fontSize:"10px",fontWeight:700,color:"#41535e"}}>{["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][index]}</small>
+  <div className="earnings-chart">
+    {weeklyDaily.map((day, index) => <div className="earnings-chart-day" key={day.day}>
+      <small>R{Math.round(Number(day.total_zar || 0)).toLocaleString("en-ZA")}</small>
+      <div title={`R${Number(day.total_zar || 0).toLocaleString("en-ZA")}`} className="earnings-chart-track"><span style={{height:`${Math.max(4,Number(day.total_zar || 0)/weeklyMax*72)}px`}} /></div>
+      <small>{["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][index]}</small>
     </div>)}
   </div>
-  <div className="review-summary" style={{marginTop:"18px"}}>
-    <h3>Daily breakdown</h3>
-    {weeklyDaily.map((day, index) => <div className="review-row" key={day.day}>
-      <small>{new Date(day.day).toLocaleDateString("en-ZA", { weekday:"long", day:"numeric", month:"short", timeZone:"Africa/Johannesburg" })}</small>
+  <details className="earnings-details earnings-daily-details">
+    <summary>Daily breakdown</summary>
+    {weeklyDaily.map(day => <div className="earnings-compact-row" key={day.day}>
+      <span>{new Date(day.day).toLocaleDateString("en-ZA", { weekday:"short", day:"numeric", month:"short", timeZone:"Africa/Johannesburg" })}</span>
       <b>R{Number(day.total_zar || 0).toLocaleString("en-ZA")}</b>
       <small>Platform R{Number(day.platform_zar || 0).toLocaleString("en-ZA")} · Direct R{Number(day.direct_zar || 0).toLocaleString("en-ZA")}</small>
     </div>)}
-  </div>
-  <p className="privacy-note">The chart shows the current Johannesburg Monday–Sunday cycle. Direct Payments are included in this overview but excluded from platform payouts.</p>
+  </details>
 </section>
-<div className="job-list">
-  <section className="request-card">
-    <div className="eyebrow">PREPAID ACCESS WALLET</div>
-    <h2>R{accessWalletBalance.toLocaleString("en-ZA")}</h2>
-    <p>Used first toward the platform commission after a job is completed. Minimum top-up R100. Keep at least R10 in this wallet to submit offers.</p>
-    <p className="privacy-note">Top-ups are processed securely through Paystack. Your wallet is credited only after the payment is verified.</p>
+
+<div className="earnings-balance-grid">
+  <section className="request-card earnings-balance-card"><small>PLATFORM AVAILABLE</small><h3>R{platformHeldEarnings.toLocaleString("en-ZA")}</h3></section>
+  <section className="request-card earnings-balance-card"><small>PAID OUT</small><h3>R{paidEarnings.toLocaleString("en-ZA")}</h3></section>
+  <section className="request-card earnings-balance-card"><small>ACCESS WALLET</small><h3>R{accessWalletBalance.toLocaleString("en-ZA")}</h3></section>
+  <section className="request-card earnings-balance-card"><small>DIRECT PAYMENT EARNINGS</small><h3>R{directEftEarnings.toLocaleString("en-ZA")}</h3></section>
+  <section className="request-card earnings-balance-card"><small>OUTSTANDING COMMISSION</small><h3>R{outstandingCommission.toLocaleString("en-ZA")}</h3></section>
+</div>
+
+<details className="earnings-details earnings-section-details">
+  <summary>Access Wallet <span>Top up and view recent activity</span></summary>
+  <section className="request-card earnings-inner-card">
+    <p>Use your Access Wallet to keep your account ready for offers.</p>
     <AccessWalletTopup />
   </section>
-  <section className="request-card">
-    <div className="eyebrow">OUTSTANDING COMMISSION</div>
-    <h2>R{outstandingCommission.toLocaleString("en-ZA")}</h2>
-    <p>Any Direct Payment commission shortfall is recovered from your next verified wallet top-up or your next platform-held job earnings, whichever happens first. It is never collected twice.</p>
-  </section>
-  <section className="request-card">
-    <div className="eyebrow">PLATFORM-HELD EARNINGS</div>
-    <h2>R{platformHeldEarnings.toLocaleString("en-ZA")}</h2>
-    <p>Net earnings recorded for jobs paid through the platform and held or available for payout.</p>
-  </section>
-  <section className="request-card">
-    <div className="eyebrow">PAID EARNINGS</div>
-    <h2>R{paidEarnings.toLocaleString("en-ZA")}</h2>
-    <p>Platform-held earnings recorded as paid to you.</p>
-  </section>
-  <section className="request-card">
-    <div className="eyebrow">DIRECT PAYMENT EARNINGS</div>
-    <h2>R{directEftEarnings.toLocaleString("en-ZA")}</h2>
-    <p>Recorded separately. These payments are made directly to you by customers and are not part of platform-held payouts.</p>
-  </section>
-</div>
-<div className="section-heading"><div><div className="eyebrow">ACCESS WALLET ACTIVITY</div><h2>Recent transactions</h2></div></div>
-{walletTransactions.length === 0 ? <section className="request-card"><p className="privacy-note">No Access Wallet transactions yet.</p></section> : <div className="job-list">{walletTransactions.map(item => <article className="request-card" key={item.id}>
-  <div className="eyebrow">{new Date(item.created_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}</div>
-  <h3>{item.description || item.transaction_type.replaceAll("_", " ")}</h3>
-  <p>{item.direction === "credit" ? "+" : "−"}R{item.amount_zar.toLocaleString("en-ZA")} · <span className="capitalize">{item.status}</span></p>
-</article>)}</div>}
-<div className="section-heading"><div><div className="eyebrow">JOB EARNINGS</div><h2>Recent completed jobs</h2></div></div>
-{earnings.length === 0 ? <section className="request-card"><p className="privacy-note">Your completed-job earnings will appear here once payment and completion records are connected.</p></section> : <div className="job-list">{earnings.map(item => <article className="request-card" key={item.id}>
-  <h3>Labour: R{item.labour_amount_zar.toLocaleString("en-ZA")}</h3>
-  <div className="review-summary">
-    <div className="review-row"><small>TOTAL COMMISSION (10%)</small><b>R{item.commission_total_zar.toLocaleString("en-ZA")}</b></div>
-    <div className="review-row"><small>PAID FROM ACCESS WALLET</small><b>R{item.commission_wallet_amount_zar.toLocaleString("en-ZA")}</b></div>
-    <div className="review-row"><small>SHORTFALL FROM THIS JOB'S EARNINGS</small><b>R{item.commission_amount_zar.toLocaleString("en-ZA")}</b></div>
-    <div className="review-row"><small>OLD DIRECT PAYMENT SHORTFALL RECOVERED</small><b>R{item.commission_carryforward_deducted_zar.toLocaleString("en-ZA")}</b></div>
-    <div className="review-row"><small>DIRECT PAYMENT SHORTFALL CARRIED FORWARD</small><b>R{item.commission_shortfall_zar.toLocaleString("en-ZA")}</b></div>
-    <div className="review-row"><small>NET HANDYMAN EARNINGS</small><b>R{item.net_earnings_zar.toLocaleString("en-ZA")}</b></div>
-    <div className="review-row"><small>PAYMENT METHOD</small><b>{item.payment_method === "direct_eft" ? "Direct payment" : "Platform payment"}</b></div>
-    <div className="review-row"><small>STATUS</small><b className="capitalize">{item.status.replaceAll("_", " ")}</b></div>
-  </div>
-</article>)}</div>}
-<div className="section-heading"><div><div className="eyebrow">PAYOUT HISTORY</div><h2>Withdrawals and payouts</h2></div></div>
-{payouts.length === 0 ? <section className="request-card"><p className="privacy-note">No payout requests yet. Weekly payouts are planned for Monday. Instant withdrawals carry a 2% fee, with a R5 minimum fee and no minimum withdrawal amount.</p></section> : <div className="job-list">{payouts.map(item => <article className="request-card" key={item.id}>
-  <h3>{item.payout_type === "instant" ? "Instant withdrawal" : "Weekly payout"}</h3>
-  <p>Requested {new Date(item.requested_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}</p>
-  <div className="review-summary">
-    <div className="review-row"><small>GROSS</small><b>R{item.gross_amount_zar.toLocaleString("en-ZA")}</b></div>
-    <div className="review-row"><small>FEE</small><b>R{item.fee_amount_zar.toLocaleString("en-ZA")}</b></div>
-    <div className="review-row"><small>NET PAYOUT</small><b>R{item.net_amount_zar.toLocaleString("en-ZA")}</b></div>
-    <div className="review-row"><small>STATUS</small><b className="capitalize">{item.status}</b></div>
-  </div>
-</article>)}</div>}
-<HandymanBankAccountForm />
-<section className="request-card">
-  <div className="eyebrow">PAYOUT SETTINGS</div>
-  <h3>Weekly payout: Monday</h3>
-  <p>Instant withdrawal fee: 2% of the amount, with a minimum fee of R5. There is no minimum withdrawal amount.</p>
-  <p className="privacy-note">Top-ups are being tested in Paystack test mode. Commission deductions and withdrawals are not enabled yet.</p>
-</section>
+  {walletTransactions.length === 0 ? <p className="privacy-note">No wallet transactions yet.</p> : walletTransactions.map(item => <div className="earnings-compact-row" key={item.id}>
+    <span>{item.description || item.transaction_type.replaceAll("_", " ")}</span>
+    <b>{item.direction === "credit" ? "+" : "−"}R{item.amount_zar.toLocaleString("en-ZA")}</b>
+    <small>{new Date(item.created_at).toLocaleString("en-ZA", { dateStyle:"medium", timeStyle:"short" })} · <span className="capitalize">{item.status}</span></small>
+  </div>)}
+</details>
+
+<details className="earnings-details earnings-section-details">
+  <summary>Completed job earnings <span>{earnings.length} recent records</span></summary>
+  {earnings.length === 0 ? <p className="privacy-note">Completed-job earnings will appear here.</p> : earnings.map(item => <article className="earnings-job-row" key={item.id}>
+    <div className="earnings-job-main">
+      <div><b>{new Date(item.completed_at).toLocaleDateString("en-ZA", { dateStyle:"medium" })}</b><small>{item.payment_method === "direct_eft" ? "Direct payment" : "Platform payment"} · <span className="capitalize">{item.status.replaceAll("_", " ")}</span></small></div>
+      <strong>R{item.net_earnings_zar.toLocaleString("en-ZA")}</strong>
+    </div>
+    <details className="earnings-details earnings-breakdown">
+      <summary>View earnings breakdown</summary>
+      <div className="earnings-compact-row"><span>Labour</span><b>R{item.labour_amount_zar.toLocaleString("en-ZA")}</b></div>
+      <div className="earnings-compact-row"><span>Net earnings</span><b>R{item.net_earnings_zar.toLocaleString("en-ZA")}</b></div>
+    </details>
+  </article>)}
+</details>
+
+<details className="earnings-details earnings-section-details">
+  <summary>Payout history <span>{payouts.length} recent records</span></summary>
+  {payouts.length === 0 ? <p className="privacy-note">No payout requests yet.</p> : payouts.map(item => <div className="earnings-compact-row" key={item.id}>
+    <span>{item.payout_type === "instant" ? "Instant withdrawal" : "Weekly payout"}<small>{new Date(item.requested_at).toLocaleString("en-ZA", { dateStyle:"medium", timeStyle:"short" })}</small></span>
+    <b>R{item.net_amount_zar.toLocaleString("en-ZA")}<small className="capitalize">{item.status.replaceAll("_", " ")}</small></b>
+    <details className="earnings-details earnings-breakdown"><summary>Details</summary><small>Gross R{item.gross_amount_zar.toLocaleString("en-ZA")} · Fee R{item.fee_amount_zar.toLocaleString("en-ZA")}</small></details>
+  </div>)}
+</details>
+
+<details className="earnings-details earnings-section-details">
+  <summary>Bank account &amp; payout settings</summary>
+  <HandymanBankAccountForm />
+  <p className="privacy-note">Weekly payouts are scheduled for Monday. Your bank details are stored securely.</p>
+</details>
         </>}
         profile={<>
 <div className="section-heading" id="my-profile"><div><div className="eyebrow">YOUR PROFILE</div><h2>Professional details</h2></div></div>
