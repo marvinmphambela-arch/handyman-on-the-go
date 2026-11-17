@@ -9,6 +9,7 @@ import RealtimeRefresh from "@/components/realtime-refresh";
 import StatusBadge from "@/components/status-badge";
 import HandymanDashboardTabs from "@/components/handyman-dashboard-tabs";
 import AccessWalletTopup from "@/components/access-wallet-topup";
+import HandymanBankAccountForm from "./bank-account-form";
 
 type DashboardJob = {
   id: string;
@@ -311,6 +312,7 @@ export default async function HandymanDashboard() {
     <div className="review-row"><small>STATUS</small><b className="capitalize">{item.status}</b></div>
   </div>
 </article>)}</div>}
+<HandymanBankAccountForm />
 <section className="request-card">
   <div className="eyebrow">PAYOUT SETTINGS</div>
   <h3>Weekly payout: Monday</h3>
