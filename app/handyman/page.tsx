@@ -241,6 +241,14 @@ export default async function HandymanDashboard() {
       <small style={{fontSize:"10px",fontWeight:700,color:"#41535e"}}>{["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][index]}</small>
     </div>)}
   </div>
+  <div className="review-summary" style={{marginTop:"18px"}}>
+    <h3>Daily breakdown</h3>
+    {weeklyDaily.map((day, index) => <div className="review-row" key={day.day}>
+      <small>{new Date(day.day).toLocaleDateString("en-ZA", { weekday:"long", day:"numeric", month:"short", timeZone:"Africa/Johannesburg" })}</small>
+      <b>R{Number(day.total_zar || 0).toLocaleString("en-ZA")}</b>
+      <small>Platform R{Number(day.platform_zar || 0).toLocaleString("en-ZA")} · Direct R{Number(day.direct_zar || 0).toLocaleString("en-ZA")}</small>
+    </div>)}
+  </div>
   <p className="privacy-note">The chart shows the current Johannesburg Monday–Sunday cycle. Direct Payments are included in this overview but excluded from platform payouts.</p>
 </section>
 <div className="job-list">
