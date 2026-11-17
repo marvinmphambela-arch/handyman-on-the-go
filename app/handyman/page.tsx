@@ -10,6 +10,7 @@ import StatusBadge from "@/components/status-badge";
 import HandymanDashboardTabs from "@/components/handyman-dashboard-tabs";
 import AccessWalletTopup from "@/components/access-wallet-topup";
 import HandymanBankAccountForm from "./bank-account-form";
+import JobRadarSearch from "@/components/job-radar-search";
 
 type DashboardJob = {
   id: string;
@@ -164,11 +165,11 @@ export default async function HandymanDashboard() {
         <div className="button-row"><Link className="btn btn-dark" href="/handyman/verification">Identity verification</Link></div>
       </div>
 
-      <section className="request-card" aria-live="polite">
-        <div className="eyebrow">VERIFICATION STATUS</div>
-        <h2>{profile.verification_status === "approved" ? "Your account is approved" : profile.verification_status === "under_review" ? "Your documents are under review" : profile.verification_status === "rejected" ? "Your application was not approved" : profile.verification_status === "suspended" ? "Your account is suspended" : "Verification is pending"}</h2>
-        <p>{profile.verification_status === "approved" ? "You are approved to receive matching job requests and submit offers." : profile.verification_status === "under_review" ? "Our team is reviewing your verification. You cannot receive job requests or submit offers until approval." : profile.verification_status === "rejected" ? "You cannot receive job requests or submit offers. Please contact support." : profile.verification_status === "suspended" ? "Your access to job requests and offers is currently paused. Please contact support." : "Your account is waiting for verification. You cannot receive job requests or submit offers until an administrator approves your account."}</p>
-      </section>
+      <JobRadarSearch
+        verificationStatus={profile.verification_status ?? "pending"}
+        available={Boolean(profile.available)}
+        opportunitiesCount={opportunities.length}
+      />
         </>}
         jobs={<>
 <div className="section-heading" id="new-jobs"><div><div className="eyebrow">AVAILABLE WORK</div><h2>New opportunities ({opportunities.length})</h2></div></div>
