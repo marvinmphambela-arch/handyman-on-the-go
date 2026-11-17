@@ -71,12 +71,12 @@ export async function PUT(request: Request) {
     const bankCode = typeof body?.bank_code === "string" ? body.bank_code.trim() : "";
     const accountHolderName = typeof body?.account_holder_name === "string" ? body.account_holder_name.trim() : "";
     const accountType = typeof body?.account_type === "string" ? body.account_type : "";
-    const accountNumber = typeof body?.account_number === "string" ? body.account_number.replace(/\\s+/g, "") : "";
+    const accountNumber = typeof body?.account_number === "string" ? body.account_number.replaceAll(" ", "").replaceAll("-", "") : "";
 
     if (!bankName || bankName.length > 100 || !bankCode || bankCode.length > 20 ||
         !accountHolderName || accountHolderName.length > 120 ||
         !["current", "savings", "transmission"].includes(accountType) ||
-        !/^\\d{6,20}$/.test(accountNumber)) {
+        (accountNumber.length < 6 || accountNumber.length > 20 || ![...accountNumber].every(character => character >= "0" && character <= "9"))) {
       return NextResponse.json({ error: "Check the bank, account holder, account type and account number details." }, { status: 400 });
     }
 
