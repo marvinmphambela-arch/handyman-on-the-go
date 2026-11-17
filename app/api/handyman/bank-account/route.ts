@@ -27,8 +27,16 @@ async function getHandyman() {
 function originIsAllowed(request: Request) {
   const origin = request.headers.get("origin");
   if (!origin) return false;
+
   try {
-    return new URL(origin).origin === new URL(request.url).origin;
+    const originUrl = new URL(origin);
+    const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+    const host = forwardedHost || request.headers.get("host") || new URL(request.url).host;
+    const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+    const protocol = forwardedProto || (process.env.VERCEL ? "https" : new URL(request.url).protocol.replace(":", ""));
+
+    return originUrl.host.toLowerCase() === host.toLowerCase() &&
+      originUrl.protocol === `${protocol}:`;
   } catch {
     return false;
   }
