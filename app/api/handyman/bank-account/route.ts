@@ -70,6 +70,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Request origin could not be verified." }, { status: 403 });
   }
 
+  let diagnosticStage = "authentication";
   try {
     const auth = await getHandyman();
     if ("error" in auth) return auth.error;
@@ -88,8 +89,13 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Check the bank, account holder, account type and account number details." }, { status: 400 });
     }
 
+    diagnosticStage = "encryption";
     const ciphertext = encryptBankAccountNumber(accountNumber);
+
+    diagnosticStage = "admin_client";
     const admin = createAdminClient();
+
+    diagnosticStage = "database_write";
     const { data, error } = await admin
       .from("handyman_bank_accounts")
       .upsert({
@@ -111,8 +117,11 @@ export async function PUT(request: Request) {
       headers: { "Cache-Control": "no-store, private" }
     });
   } catch (error) {
-    console.error("Bank account save failed:", error);
-    return NextResponse.json({ error: "We could not save your bank details. Please try again." }, { status: 500 });
+    console.error("Bank account save failed at stage:", diagnosticStage, error);
+    return NextResponse.json({
+      error: "We could not save your bank details. Please try again.",
+      diagnosticCode: `BANK_SAVE_${diagnosticStage.toUpperCase()}`
+    }, { status: 500 });
   }
 }
 
