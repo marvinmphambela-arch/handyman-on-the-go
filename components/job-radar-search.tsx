@@ -24,12 +24,12 @@ export default function JobRadarSearch({ verificationStatus, available, opportun
   }
 
   if (!available) {
-    return <section className="request-card" aria-live="polite"><div className="eyebrow">YOUR AVAILABILITY</div><h2>Your account is approved</h2><p>You’re currently marked unavailable, so we’re not searching for new opportunities. Switch on your availability in your profile when you’re ready.</p></section>;
+    return <section className="request-card" aria-live="polite"><div className="eyebrow">YOUR AVAILABILITY</div><h2>Your profile is active</h2><p>You’re currently marked unavailable, so we’re not searching for new opportunities. Switch on your availability in your profile when you’re ready.</p></section>;
   }
 
   return <section className={`job-radar-card ${hasOpportunities ? "has-opportunities" : "is-searching"}`} aria-live="polite">
     <div className="job-radar-copy">
-      <div className="eyebrow">{hasOpportunities ? "OPPORTUNITY FOUND" : "YOUR ACCOUNT IS APPROVED"}</div>
+      <div className="eyebrow">{hasOpportunities ? "OPPORTUNITY FOUND" : "YOUR PROFILE IS ACTIVE"}</div>
       <h2>{hasOpportunities ? `You have ${opportunitiesCount} open ${opportunitiesCount === 1 ? "opportunity" : "opportunities"}` : "Looking for your next opportunity…"}</h2>
       <p>{hasOpportunities ? "The search is paused while you review the available work below." : "We’re keeping an eye out for new work. You’ll see an opportunity here as soon as one becomes available."}</p>
       {hasOpportunities && <a className="btn btn-orange job-radar-action" href="#new-jobs" onClick={() => document.querySelector<HTMLButtonElement>('.handyman-dashboard-nav button:nth-child(2)')?.click()}>View available work</a>}
