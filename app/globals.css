@@ -279,3 +279,38 @@ select:disabled { opacity: .65; cursor: not-allowed; }
 .earnings-breakdown>summary{padding:7px 0;font-size:10px;color:#68777a}
 .earnings-breakdown .earnings-compact-row{padding:8px 0}
 @media(max-width:600px){.earnings-week-card{padding:21px 17px}.earnings-balance-grid{gap:9px}.earnings-balance-card{padding:15px 13px}.earnings-balance-card h3{font-size:18px}.earnings-details>summary{padding:15px;font-size:12px}.earnings-compact-row{padding:11px 14px}.earnings-job-row{padding:13px 14px}}
+
+
+/* Home-tab opportunity radar and animated HGO handyman */
+.job-radar-card{display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:18px;min-height:270px;padding:30px;background:linear-gradient(125deg,#10283d,#173b55);border:0;border-radius:18px;color:#fff;overflow:hidden}
+.job-radar-copy .eyebrow{color:#f5a365}
+.job-radar-copy h2{font-size:clamp(23px,3vw,31px);line-height:1.15;letter-spacing:-1px;margin:12px 0}
+.job-radar-copy p{max-width:390px;color:#d4dfe4;font-size:13px;line-height:1.7;margin:0}
+.job-radar-visual{position:relative;width:230px;height:230px;justify-self:center;display:grid;place-items:center}
+.radar-ring{position:absolute;border:1px solid #ffffff35;border-radius:50%;inset:10px}
+.radar-ring-middle{inset:43px;border-color:#ffffff45}
+.radar-sweep{position:absolute;inset:10px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,transparent 290deg,#f5822030 330deg,#f58220a8 359deg);animation:radar-rotate 4s linear infinite}
+.radar-center{position:absolute;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:#f58220;color:#10283d;font-size:12px;font-weight:900;letter-spacing:-.5px;box-shadow:0 0 0 8px #f5822020}
+.radar-dot{position:absolute;width:9px;height:9px;border-radius:50%;background:#ffad68;box-shadow:0 0 0 5px #f5822025;animation:radar-pulse 1.8s ease-in-out infinite}
+.radar-dot-one{top:44px;right:47px}.radar-dot-two{bottom:49px;left:39px;animation-delay:.5s}.radar-dot-three{top:104px;right:14px;animation-delay:1s}
+.radar-handyman{position:absolute;width:84px;height:105px;left:50%;top:50%;transform:translate(-50%,-58%);z-index:2;animation:handyman-run .75s ease-in-out infinite alternate}
+.radar-handyman svg{width:100%;height:100%;overflow:visible}
+.radar-handyman path,.radar-handyman circle{stroke:#f4c49e;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.radar-handyman .handyman-body{fill:#f58220;stroke:#f58220}
+.radar-handyman .handyman-head{fill:#a96742;stroke:#a96742}
+.radar-handyman .handyman-cap{fill:#10283d;stroke:#10283d;stroke-width:3}
+.radar-handyman .handyman-cap-brim{stroke:#10283d;stroke-width:4}
+.radar-handyman .handyman-toolbox{fill:#f58220;stroke:#172f45;stroke-width:2}
+.radar-handyman .handyman-toolbox-handle{stroke:#f4c49e;stroke-width:3}
+.radar-handyman .handyman-front-arm,.radar-handyman .handyman-back-arm,.radar-handyman .handyman-front-leg,.radar-handyman .handyman-back-leg{transform-box:fill-box;transform-origin:50% 10%;animation:limb-run .38s ease-in-out infinite alternate}
+.radar-handyman .handyman-back-arm,.radar-handyman .handyman-back-leg{animation-direction:alternate-reverse}
+.job-radar-card.has-opportunities .radar-sweep,.job-radar-card.has-opportunities .radar-dot,.job-radar-card.has-opportunities .radar-handyman,.job-radar-card.has-opportunities .radar-handyman *{animation-play-state:paused}
+.job-radar-card.has-opportunities .radar-dot{background:#79d6a2;box-shadow:0 0 0 5px #79d6a225}
+.job-radar-card.has-opportunities .radar-center{background:#79d6a2}
+.job-radar-action{margin-top:18px}
+@keyframes radar-rotate{to{transform:rotate(360deg)}}
+@keyframes radar-pulse{0%,100%{opacity:.45;transform:scale(.8)}50%{opacity:1;transform:scale(1.25)}}
+@keyframes handyman-run{from{margin-top:-4px}to{margin-top:5px}}
+@keyframes limb-run{from{transform:rotate(-24deg)}to{transform:rotate(24deg)}}
+@media(max-width:600px){.job-radar-card{grid-template-columns:1fr;padding:24px 20px;gap:6px}.job-radar-copy{text-align:center}.job-radar-copy p{margin:auto}.job-radar-visual{width:205px;height:205px}.job-radar-action{margin-inline:auto}}
+@media(prefers-reduced-motion:reduce){.radar-sweep,.radar-dot,.radar-handyman,.radar-handyman *{animation:none!important}}
