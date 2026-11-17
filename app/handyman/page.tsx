@@ -254,7 +254,7 @@ export default async function HandymanDashboard() {
   <section className="request-card">
     <div className="eyebrow">OUTSTANDING COMMISSION</div>
     <h2>R{outstandingCommission.toLocaleString("en-ZA")}</h2>
-    <p>Any Direct EFT commission shortfall is recovered from your next verified wallet top-up or your next platform-held job earnings, whichever happens first. It is never collected twice.</p>
+    <p>Any Direct Payment commission shortfall is recovered from your next verified wallet top-up or your next platform-held job earnings, whichever happens first. It is never collected twice.</p>
   </section>
   <section className="request-card">
     <div className="eyebrow">PLATFORM-HELD EARNINGS</div>
@@ -285,8 +285,8 @@ export default async function HandymanDashboard() {
     <div className="review-row"><small>TOTAL COMMISSION (10%)</small><b>R{item.commission_total_zar.toLocaleString("en-ZA")}</b></div>
     <div className="review-row"><small>PAID FROM ACCESS WALLET</small><b>R{item.commission_wallet_amount_zar.toLocaleString("en-ZA")}</b></div>
     <div className="review-row"><small>SHORTFALL FROM THIS JOB'S EARNINGS</small><b>R{item.commission_amount_zar.toLocaleString("en-ZA")}</b></div>
-    <div className="review-row"><small>OLD DIRECT EFT SHORTFALL RECOVERED</small><b>R{item.commission_carryforward_deducted_zar.toLocaleString("en-ZA")}</b></div>
-    <div className="review-row"><small>DIRECT EFT SHORTFALL CARRIED FORWARD</small><b>R{item.commission_shortfall_zar.toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>OLD DIRECT PAYMENT SHORTFALL RECOVERED</small><b>R{item.commission_carryforward_deducted_zar.toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>DIRECT PAYMENT SHORTFALL CARRIED FORWARD</small><b>R{item.commission_shortfall_zar.toLocaleString("en-ZA")}</b></div>
     <div className="review-row"><small>NET HANDYMAN EARNINGS</small><b>R{item.net_earnings_zar.toLocaleString("en-ZA")}</b></div>
     <div className="review-row"><small>PAYMENT METHOD</small><b>{item.payment_method === "direct_eft" ? "Direct payment" : "Platform payment"}</b></div>
     <div className="review-row"><small>STATUS</small><b className="capitalize">{item.status.replaceAll("_", " ")}</b></div>
