@@ -66,7 +66,10 @@ export default function HandymanBankAccountForm() {
         })
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "We could not save your bank details.");
+      if (!response.ok) {
+        const diagnostic = typeof result.diagnosticCode === "string" ? ` [${result.diagnosticCode}]` : "";
+        throw new Error((result.error || "We could not save your bank details.") + diagnostic);
+      }
       setBank(result.bankAccount as BankAccount);
       setAccountNumber("");
       setMessage("Your payout bank details have been saved securely. Only the last four account digits are displayed.");
