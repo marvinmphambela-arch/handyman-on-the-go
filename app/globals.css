@@ -240,3 +240,42 @@ select:disabled { opacity: .65; cursor: not-allowed; }
   .choice-card-copy strong { font-size: 12px; }
   .choice-card-copy small { font-size: 10px; }
 }
+
+
+/* Compact handyman earnings dashboard */
+.earnings-week-card{padding:26px}
+.earnings-week-card>h2{font-size:clamp(30px,5vw,42px);letter-spacing:-1.5px;margin:8px 0 18px}
+.earnings-week-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:14px 0;border-top:1px solid #edf0ed;border-bottom:1px solid #edf0ed}
+.earnings-week-split small,.earnings-week-split b{display:block}
+.earnings-week-split small,.earnings-balance-card>small{font-size:9px;letter-spacing:.8px;color:#849195;font-weight:750}
+.earnings-week-split b{font-size:16px;margin-top:5px}
+.earnings-chart{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:end;height:112px;padding-top:14px}
+.earnings-chart-day{display:flex;flex-direction:column;align-items:center;justify-content:end;gap:5px;min-width:0;height:100%}
+.earnings-chart-day>small{font-size:9px;color:#667579;white-space:nowrap}
+.earnings-chart-track{height:76px;width:100%;display:flex;align-items:end;justify-content:center}
+.earnings-chart-track span{display:block;width:min(100%,30px);min-height:4px;background:#f58220;border-radius:6px 6px 2px 2px}
+.earnings-balance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+.earnings-balance-card{padding:18px 20px;box-shadow:none}
+.earnings-balance-card h3{font-size:21px;margin:7px 0 0;letter-spacing:-.5px}
+.earnings-details{border:1px solid #e3e9e5;border-radius:12px;background:#fff}
+.earnings-details>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 19px;cursor:pointer;list-style:none;color:#183247;font-size:13px;font-weight:800}
+.earnings-details>summary::-webkit-details-marker{display:none}
+.earnings-details>summary:after{content:"+";font-size:19px;color:#d77c37;line-height:1}
+.earnings-details[open]>summary:after{content:"−"}
+.earnings-details>summary span{font-size:10px;font-weight:600;color:#839094;text-align:right}
+.earnings-section-details{margin:12px 0;overflow:hidden}
+.earnings-section-details>.request-card{margin:0;border:0;border-radius:0;box-shadow:none;border-top:1px solid #edf0ed;padding:20px}
+.earnings-daily-details{margin-top:12px}
+.earnings-daily-details>summary{padding:12px 0 4px;font-size:11px}
+.earnings-compact-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:12px 18px;border-top:1px solid #edf0ed;font-size:12px}
+.earnings-compact-row>small,.earnings-compact-row span small,.earnings-compact-row b small{display:block;font-size:10px;color:#829094;font-weight:500;margin-top:4px}
+.earnings-job-row{padding:14px 18px;border-top:1px solid #edf0ed}
+.earnings-job-main{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.earnings-job-main>div>b,.earnings-job-main>div>small{display:block}
+.earnings-job-main>div>b{font-size:12px}
+.earnings-job-main>div>small{font-size:10px;color:#829094;margin-top:5px}
+.earnings-job-main>strong{font-size:14px;white-space:nowrap}
+.earnings-breakdown{margin-top:9px;border:0;border-radius:0;background:transparent}
+.earnings-breakdown>summary{padding:7px 0;font-size:10px;color:#68777a}
+.earnings-breakdown .earnings-compact-row{padding:8px 0}
+@media(max-width:600px){.earnings-week-card{padding:21px 17px}.earnings-balance-grid{gap:9px}.earnings-balance-card{padding:15px 13px}.earnings-balance-card h3{font-size:18px}.earnings-details>summary{padding:15px;font-size:12px}.earnings-compact-row{padding:11px 14px}.earnings-job-row{padding:13px 14px}}
