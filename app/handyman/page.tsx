@@ -170,8 +170,6 @@ export default async function HandymanDashboard() {
         available={Boolean(profile.available)}
         opportunitiesCount={opportunities.length}
       />
-        </>}
-        jobs={<>
 <div className="section-heading" id="new-jobs"><div><div className="eyebrow">AVAILABLE WORK</div><h2>New opportunities ({opportunities.length})</h2></div></div>
       {!profile.available && <section className="request-card"><h3>You are marked unavailable.</h3><p>Switch on your availability below to receive matching job opportunities.</p></section>}
       {profile.available && opportunities.length === 0 && <section className="request-card"><p className="privacy-note">No matching open jobs right now. New requests will appear here automatically.</p></section>}
