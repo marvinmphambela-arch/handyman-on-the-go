@@ -93,7 +93,7 @@ export default async function HandymanDashboard() {
 
   if (profile?.role !== "handyman") redirect("/account");
 
-  const [opportunitiesResult, rejectedOffersResult, bookingsResult, notificationsResult, walletResult, walletTransactionsResult, earningsResult, payoutsResult, carryforwardsResult] = await Promise.all([
+  const [opportunitiesResult, rejectedOffersResult, bookingsResult, notificationsResult, walletResult, walletTransactionsResult, earningsResult, payoutsResult, carryforwardsResult, earningsSummaryResult] = await Promise.all([
     supabase.from("jobs")
       .select("id, title, description, suburb, city, urgency, created_at, service_categories(name)")
       .eq("status", "open")
@@ -114,7 +114,8 @@ export default async function HandymanDashboard() {
     supabase.from("handyman_access_wallet_transactions").select("id, transaction_type, direction, amount_zar, status, description, created_at").eq("handyman_id", user.id).order("created_at", { ascending: false }).limit(10),
     supabase.from("handyman_earnings").select("id, job_id, labour_amount_zar, commission_total_zar, commission_wallet_amount_zar, commission_shortfall_zar, commission_carryforward_deducted_zar, commission_amount_zar, net_earnings_zar, payment_method, status, completed_at").eq("handyman_id", user.id).order("completed_at", { ascending: false }).limit(20),
     supabase.from("handyman_payout_requests").select("id, payout_type, gross_amount_zar, fee_amount_zar, net_amount_zar, status, requested_at").eq("handyman_id", user.id).order("requested_at", { ascending: false }).limit(10),
-    supabase.from("handyman_commission_carryforwards").select("remaining_amount_zar").eq("handyman_id", user.id).gt("remaining_amount_zar", 0)
+    supabase.from("handyman_commission_carryforwards").select("remaining_amount_zar").eq("handyman_id", user.id).gt("remaining_amount_zar", 0),
+    supabase.rpc("get_handyman_earnings_summary", { p_handyman_id: user.id })
   ]);
 
   const rejectedJobIds = [...new Set((rejectedOffersResult.data ?? []).map(offer => offer.job_id))];
@@ -135,9 +136,16 @@ export default async function HandymanDashboard() {
   const earnings = (earningsResult.data ?? []) as EarningsRecord[];
   const payouts = (payoutsResult.data ?? []) as PayoutRecord[];
   const outstandingCommission = (carryforwardsResult.data ?? []).reduce((sum, item) => sum + Number(item.remaining_amount_zar || 0), 0);
-  const platformHeldEarnings = earnings.filter(item => ["held", "available"].includes(item.status) && item.payment_method === "platform").reduce((sum, item) => sum + item.net_earnings_zar, 0);
-  const paidEarnings = earnings.filter(item => item.status === "paid").reduce((sum, item) => sum + item.net_earnings_zar, 0);
-  const directEftEarnings = earnings.filter(item => item.payment_method === "direct_eft").reduce((sum, item) => sum + item.net_earnings_zar, 0);
+  const earningsSummary = (earningsSummaryResult.data ?? {}) as {
+    platform_held_zar?: number; platform_paid_zar?: number; direct_payment_zar?: number;
+    week_total_zar?: number; week_platform_zar?: number; week_direct_zar?: number;
+    daily?: { day: string; total_zar: number; platform_zar: number; direct_zar: number }[];
+  };
+  const platformHeldEarnings = Number(earningsSummary.platform_held_zar ?? 0);
+  const paidEarnings = Number(earningsSummary.platform_paid_zar ?? 0);
+  const directEftEarnings = Number(earningsSummary.direct_payment_zar ?? 0);
+  const weeklyDaily = earningsSummary.daily ?? [];
+  const weeklyMax = Math.max(1, ...weeklyDaily.map(day => Number(day.total_zar || 0)));
 
   return <main className="request-page">
     <RealtimeRefresh />
@@ -218,6 +226,23 @@ export default async function HandymanDashboard() {
         </>}
         earnings={<>
 <div className="section-heading"><div><div className="eyebrow">YOUR MONEY</div><h2>Earnings &amp; Access Wallet</h2></div></div>
+<section className="request-card">
+  <div className="eyebrow">THIS WEEK · MONDAY TO SUNDAY</div>
+  <h2>R{Number(earningsSummary.week_total_zar ?? 0).toLocaleString("en-ZA")}</h2>
+  <p>Net earnings recorded from jobs completed this week, including platform payments and Direct Payments.</p>
+  <div className="review-summary">
+    <div className="review-row"><small>PLATFORM PAYMENT</small><b>R{Number(earningsSummary.week_platform_zar ?? 0).toLocaleString("en-ZA")}</b></div>
+    <div className="review-row"><small>DIRECT PAYMENT</small><b>R{Number(earningsSummary.week_direct_zar ?? 0).toLocaleString("en-ZA")}</b></div>
+  </div>
+  <div style={{display:"grid",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:"9px",alignItems:"end",height:"150px",marginTop:"24px"}}>
+    {weeklyDaily.map((day, index) => <div key={day.day} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"end",height:"100%",gap:"7px"}}>
+      <small style={{fontSize:"9px",color:"#667579"}}>R{Math.round(Number(day.total_zar || 0)).toLocaleString("en-ZA")}</small>
+      <div title={`R${Number(day.total_zar || 0).toLocaleString("en-ZA")}`} style={{width:"100%",maxWidth:"34px",height:`${Math.max(5,Number(day.total_zar || 0)/weeklyMax*92)}px`,background:"#f58220",borderRadius:"7px 7px 2px 2px"}} />
+      <small style={{fontSize:"10px",fontWeight:700,color:"#41535e"}}>{["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][index]}</small>
+    </div>)}
+  </div>
+  <p className="privacy-note">The chart shows the current Johannesburg Monday–Sunday cycle. Direct Payments are included in this overview but excluded from platform payouts.</p>
+</section>
 <div className="job-list">
   <section className="request-card">
     <div className="eyebrow">PREPAID ACCESS WALLET</div>
