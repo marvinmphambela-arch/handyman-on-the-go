@@ -32,7 +32,7 @@ export default function JobRadarSearch({ verificationStatus, available, opportun
       <div className="eyebrow">{hasOpportunities ? "OPPORTUNITY FOUND" : "YOUR PROFILE IS ACTIVE"}</div>
       <h2>{hasOpportunities ? `You have ${opportunitiesCount} open ${opportunitiesCount === 1 ? "opportunity" : "opportunities"}` : "Looking for your next opportunity…"}</h2>
       <p>{hasOpportunities ? "The search is paused while you review the available work below." : "We’re keeping an eye out for new work. You’ll see an opportunity here as soon as one becomes available."}</p>
-      {hasOpportunities && <a className="btn btn-orange job-radar-action" href="#new-jobs" onClick={() => document.querySelector<HTMLButtonElement>('.handyman-dashboard-nav button:nth-child(2)')?.click()}>View available work</a>}
+      {hasOpportunities && <a className="btn btn-orange job-radar-action" href="#new-jobs">View available work</a>}
     </div>
     <div className="job-radar-visual" aria-hidden="true">
       <div className="radar-display">
