@@ -108,17 +108,67 @@ export async function POST(request: Request) {
       if (recipientSaveError) throw recipientSaveError;
     }
 
-    const { data: payout, error: payoutError } = await admin.rpc(
-      "request_instant_handyman_payout",
-      { p_handyman_id: handymanId, p_amount_zar: amountZar }
-    );
+    // Recover one previously reserved request that failed before it was marked
+    // processing. Never create a second request for the same reserved earnings.
+    const { data: pendingRequests, error: pendingError } = await admin
+      .from("handyman_payout_requests")
+      .select("id, gross_amount_zar, fee_amount_zar, net_amount_zar, paystack_recipient_code_snapshot, transfer_reference, transfer_status")
+      .eq("handyman_id", handymanId)
+      .eq("payout_type", "instant")
+      .eq("status", "requested")
+      .is("transfer_reference", null)
+      .is("transfer_status", null)
+      .order("requested_at", { ascending: false })
+      .limit(2);
 
-    if (payoutError) throw payoutError;
+    if (pendingError) throw pendingError;
+    if ((pendingRequests ?? []).length > 1) {
+      throw new Error("More than one unprocessed withdrawal request exists. Please contact support before retrying.");
+    }
 
-    const payoutRequestId = payout?.payout_request_id;
-    const netAmountKobo = Number(payout?.net_amount_kobo);
-    if (typeof payoutRequestId !== "string" || !Number.isSafeInteger(netAmountKobo) || netAmountKobo <= 0) {
-      throw new Error("Payout request was created without a valid transfer amount.");
+    let payoutRequestId: string;
+    let grossAmountZar: number;
+    let feeAmountZar: number;
+    let netAmountKobo: number;
+
+    const pending = pendingRequests?.[0];
+    if (pending) {
+      if (Number(pending.gross_amount_zar) !== amountZar) {
+        return NextResponse.json({
+          error: "An earlier withdrawal request is awaiting recovery. Please use the same amount or contact support."
+        }, { status: 409 });
+      }
+
+      const savedRecipientCode = pending.paystack_recipient_code_snapshot as string | null;
+      if (savedRecipientCode) recipientCode = savedRecipientCode;
+      if (!recipientCode) {
+        throw new Error("The saved payout recipient is unavailable. Please contact support.");
+      }
+
+      payoutRequestId = pending.id;
+      grossAmountZar = Number(pending.gross_amount_zar);
+      feeAmountZar = Number(pending.fee_amount_zar);
+      netAmountKobo = Math.round(Number(pending.net_amount_zar) * 100);
+    } else {
+      const { data: payout, error: payoutError } = await admin.rpc(
+        "request_instant_handyman_payout",
+        { p_handyman_id: handymanId, p_amount_zar: amountZar }
+      );
+
+      if (payoutError) throw payoutError;
+
+      payoutRequestId = payout?.payout_request_id;
+      grossAmountZar = Number(payout?.gross_amount_zar);
+      feeAmountZar = Number(payout?.fee_amount_zar);
+      netAmountKobo = Number(payout?.net_amount_kobo);
+    }
+
+    if (typeof payoutRequestId !== "string"
+      || !Number.isSafeInteger(netAmountKobo)
+      || netAmountKobo <= 0
+      || !Number.isFinite(grossAmountZar)
+      || !Number.isFinite(feeAmountZar)) {
+      throw new Error("Payout request was found or created without valid transfer amounts.");
     }
 
     // Paystack transfer references must be 16-50 chars and use lowercase letters,
@@ -170,8 +220,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       payoutRequestId,
-      grossAmountZar: payout.gross_amount_zar,
-      feeAmountZar: payout.fee_amount_zar,
+      grossAmountZar,
+      feeAmountZar,
       netAmountZar: netAmountKobo / 100,
       netAmountKobo,
       transferStatus,
