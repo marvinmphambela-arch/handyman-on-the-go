@@ -99,7 +99,7 @@ export default async function HandymanDashboard() {
 
   const [opportunitiesResult, rejectedOffersResult, bookingsResult, notificationsResult, walletResult, walletTransactionsResult, earningsResult, payoutsResult, carryforwardsResult, earningsSummaryResult] = await Promise.all([
     supabase.from("jobs")
-      .select("id, title, description, suburb, city, urgency, created_at, service_categories(name)")
+      .select("id, title, description, suburb, city, urgency, payment_method, created_at, service_categories(name)")
       .eq("status", "open")
       .order("created_at", { ascending: false }),
     supabase.from("job_offers")
