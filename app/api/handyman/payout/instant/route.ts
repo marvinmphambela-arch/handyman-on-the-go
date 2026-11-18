@@ -110,7 +110,7 @@ export async function POST(request: Request) {
 
     const { data: payout, error: payoutError } = await admin.rpc(
       "request_instant_handyman_payout",
-      { p_amount_zar: amountZar }
+      { p_handyman_id: handymanId, p_amount_zar: amountZar }
     );
 
     if (payoutError) throw payoutError;
