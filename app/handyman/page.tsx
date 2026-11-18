@@ -264,8 +264,6 @@ export default async function HandymanDashboard() {
 
 <InstantWithdrawal availableAmount={instantEligibleEarnings} />
 
-</div>
-
 <details className="earnings-details earnings-section-details">
   <summary>Access Wallet <span>Top up and view recent activity</span></summary>
   <section className="request-card earnings-inner-card">
