@@ -14,6 +14,7 @@ export default function NewRequestPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [urgency, setUrgency] = useState("standard");
+  const [paymentMethod, setPaymentMethod] = useState<"platform" | "direct_eft">("platform");
   const [suburb, setSuburb] = useState("");
   const [city, setCity] = useState("Johannesburg");
   const [address, setAddress] = useState("");
@@ -110,6 +111,7 @@ export default function NewRequestPage() {
         latitude: jobLatitude,
         longitude: jobLongitude,
         urgency,
+        payment_method: paymentMethod,
       });
       if (insertError) {
         setError(insertError.message.includes("row-level security")
@@ -152,7 +154,19 @@ export default function NewRequestPage() {
         </div>}
         {step === 2 && <div className="form-step"><div className="step-kicker">STEP 3 OF 3</div><h2>Review your request.</h2><p className="form-hint">Check the details before saving your request.</p>
           <div className="review-summary"><div className="review-row"><small>SERVICE</small><b>{service}</b></div><div className="review-row"><small>JOB</small><b>{title}</b><p>{description}</p></div><div className="review-row"><small>URGENCY</small><b className="capitalize">{urgency}</b></div><div className="review-row"><small>LOCATION</small><b>{suburb}, {city}</b><p>{address}</p></div><div className="review-row"><small>PHOTOS</small><b>{photos.length ? photos.join(", ") : "No photos added"}</b></div></div>
-          <div className="privacy-note">When you submit, this request will be saved to your signed-in customer account. It will not yet be sent to handymen.</div>
+          <div className="payment-choice">
+            <h3>How would you like to pay?</h3>
+            <p className="form-hint">Choose your payment method now. Handymen will see your choice before they make an offer.</p>
+            <div className="urgency-options">
+              <button type="button" onClick={() => setPaymentMethod("platform")} className={paymentMethod === "platform" ? "urgency-option selected" : "urgency-option"}>
+                <b>Platform Payment (Paystack)</b><small>Pay securely through Handyman on the Go.</small>
+              </button>
+              <button type="button" onClick={() => setPaymentMethod("direct_eft")} className={paymentMethod === "direct_eft" ? "urgency-option selected" : "urgency-option"}>
+                <b>Direct EFT</b><small>Arrange payment directly with the handyman.</small>
+              </button>
+            </div>
+          </div>
+          <div className="privacy-note">Your selected payment method will be saved with this request and shown to matching handymen before they make an offer. You can review offers before accepting one.</div>
         </div>}
         {error && <div className="form-error" role="alert">{error}{error.startsWith("Please sign in") && <> <Link href="/login">Sign in here</Link>.</>}</div>}
         <div className="form-actions">{step > 0 && <button className="btn btn-outline-dark" type="button" disabled={saving} onClick={() => {setError("");setStep((current) => current - 1);}}>Back</button>}{step < 2 ? <button className="btn btn-orange" type="button" onClick={next}>Continue <ArrowRight size={16}/></button> : <button className="btn btn-orange" type="button" disabled={saving} onClick={submitRequest}>{saving ? "Saving..." : "Submit job request"} <Check size={16}/></button>}</div>
