@@ -81,7 +81,7 @@ export type PaystackTransferResponse = {
 };
 
 export async function initiateSouthAfricaTransfer(input: {
-  amountZar: number;
+  amountKobo: number;
   recipientCode: string;
   reference: string;
   reason: string;
@@ -90,7 +90,7 @@ export async function initiateSouthAfricaTransfer(input: {
     method: "POST",
     body: JSON.stringify({
       source: "balance",
-      amount: input.amountZar * 100,
+      amount: input.amountKobo,
       currency: "ZAR",
       recipient: input.recipientCode,
       reference: input.reference,
