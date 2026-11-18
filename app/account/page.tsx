@@ -62,6 +62,16 @@ export default async function AccountPage() {
     .eq("customer_id", user.id)
     .order("created_at", { ascending: false });
 
+  if (error) {
+    console.error("[customer-dashboard] Failed to load customer jobs", {
+      userId: user.id,
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
+  }
+
   const jobs = (data ?? []) as Job[];
 
   return <main className="request-page">
