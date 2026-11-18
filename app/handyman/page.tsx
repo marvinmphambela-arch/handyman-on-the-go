@@ -183,7 +183,7 @@ export default async function HandymanDashboard() {
         return <article className="request-card" key={job.id}>
           <div className="eyebrow">{category ?? "Home service"} · <span className="capitalize">{job.urgency}</span></div>
           <h3>{job.title}</h3>
-          <div className="payment-method-badge">{job.payment_method === "platform" ? "Platform Payment" : "Direct EFT"}</div><p>{job.description}</p>
+          <div className={`payment-method-badge ${job.payment_method === "platform" ? "payment-method-platform" : "payment-method-direct"}`}>{job.payment_method === "platform" ? "Platform Payment" : "Direct EFT"}</div><p>{job.description}</p>
           <p className="form-hint">{job.suburb ? job.suburb + ", " : ""}{job.city}</p>
           <p className="privacy-note">Customer contact details and exact street address are hidden to protect privacy.</p>
           <HandymanOfferForm jobId={job.id} />
