@@ -83,7 +83,7 @@ export default async function AccountPage() {
     <div className="container request-shell">
       <div className="request-heading"><div className="eyebrow">CUSTOMER DASHBOARD</div><h1>Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}.</h1><p>Compare handyman offers and choose the one that works best for you.</p></div>
       <div className="section-heading"><div><div className="eyebrow">YOUR HOME SERVICES</div><h2>My job requests</h2></div><Link href="/request" className="text-link">Post another job</Link></div>
-      {error && <section className="request-card"><h2>We couldn't load your requests.</h2><p>Please refresh the page. If this continues, contact support.</p><p><strong>Temporary diagnostic:</strong> {error.code || "No error code"} — {error.message}</p></section>}
+      {error && <section className="request-card"><h2>We couldn't load your requests.</h2><p>Please refresh the page. If this continues, contact support.</p></section>}
       {!error && jobs.length === 0 && <section className="request-card completion"><h2>No job requests yet.</h2><p>When you post a home service request, it will appear here with any offers from handymen.</p><Link href="/request" className="btn btn-orange">Post your first job</Link></section>}
       {!error && jobs.length > 0 && (() => {
         const groups = [
