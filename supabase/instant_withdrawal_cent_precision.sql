@@ -2,6 +2,12 @@
 -- Gross earnings remain whole rand; fee/net payout values are stored to two decimals.
 begin;
 
+-- Keep the agreed product rule in sync with the client-side confirmation preview.
+update public.platform_financial_settings
+set instant_withdrawal_percent = 2.00,
+    instant_withdrawal_minimum_fee_zar = 5
+where id = true;
+
 alter table public.handyman_payout_requests
   alter column fee_amount_zar type numeric(12,2)
     using fee_amount_zar::numeric(12,2),
