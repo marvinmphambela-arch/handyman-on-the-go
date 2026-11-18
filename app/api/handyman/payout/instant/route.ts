@@ -137,7 +137,7 @@ export async function POST(request: Request) {
     let transfer;
     try {
       transfer = await initiateSouthAfricaTransfer({
-        amountZar: netAmountZar,
+        amountKobo: netAmountKobo,
         recipientCode,
         reference,
         reason: "Handyman On The Go instant withdrawal"
