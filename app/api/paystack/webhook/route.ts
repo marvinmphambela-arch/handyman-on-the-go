@@ -5,15 +5,18 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  console.info("Paystack webhook request received.");
   const paymentSecret = process.env.PAYSTACK_SECRET_KEY;
   const transferSecret = process.env.PAYSTACK_TRANSFER_SECRET_KEY;
   if (!paymentSecret && !transferSecret) {
+    console.error("Paystack webhook is not configured: no secret key is present.");
     return NextResponse.json({ error: "Webhook is not configured." }, { status: 503 });
   }
 
   const rawBody = await request.text();
   const signature = request.headers.get("x-paystack-signature");
   if (!signature || !/^[a-f0-9]{128}$/i.test(signature)) {
+    console.warn("Paystack webhook rejected: signature header is missing or malformed.");
     return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
   }
 
@@ -24,11 +27,17 @@ export async function POST(request: Request) {
     return supplied.length === expected.length && timingSafeEqual(supplied, expected);
   });
   if (!validSignature) {
+    console.warn("Paystack webhook rejected: signature did not match configured secret keys.");
     return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
   }
+  console.info("Paystack webhook signature verified.");
 
   try {
     const event = JSON.parse(rawBody);
+    console.info("Paystack webhook event accepted.", {
+      event: event?.event,
+      reference: event?.data?.reference ?? null
+    });
     const admin = createAdminClient();
 
     if (["transfer.success", "transfer.failed", "transfer.reversed"].includes(event.event)) {
@@ -49,11 +58,13 @@ export async function POST(request: Request) {
 
       if (payoutLookupError) throw payoutLookupError;
       if (!payout || payout.transfer_reference !== reference) {
+        console.warn("Paystack transfer webhook ignored: no matching payout request.", { reference });
         return NextResponse.json({ received: true });
       }
 
       // Paystack amounts are in the currency subunit. For ZAR that is cents.
       if (amount !== payout.net_amount_zar * 100) {
+        console.warn("Paystack transfer webhook ignored: amount did not match payout.", { reference });
         return NextResponse.json({ received: true });
       }
 
@@ -71,6 +82,7 @@ export async function POST(request: Request) {
           : transfer?.failures ? JSON.stringify(transfer.failures) : null
       });
       if (settleError) throw settleError;
+      console.info("Paystack transfer webhook settled payout.", { reference, status: statusMap[event.event] });
 
       return NextResponse.json({ received: true, payoutProcessed: true });
     }
