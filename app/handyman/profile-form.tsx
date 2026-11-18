@@ -15,7 +15,7 @@ type Profile = {
   available: boolean | null;
 };
 
-const serviceOptions = ["Plumbing", "Electrical", "Painting & Decorating", "Carpentry", "Building & Renovations", "Gardening & Outdoor", "Cleaning", "Appliance Repairs", "Roofing & Gutters", "Locks & Security", "Furniture Assembly", "General Home Repairs", "Other Home Services"];
+const serviceOptions = ["Plumbing", "Electrical", "Painting & Decorating", "Carpentry", "Building & Renovations", "Gardening & Outdoor", "Cleaning", "Appliance Repairs", "Roofing & Gutters", "Locks & Security", "Furniture Assembly", "General Home Repairs", "Other Home Services"];\n\nconst serviceAreaOptions = ["Johannesburg", "Sandton", "Randburg", "Roodepoort", "Soweto", "Midrand", "Fourways", "Alexandra", "Diepsloot", "Lenasia", "Orange Farm", "Alberton", "Germiston", "Kempton Park", "Edenvale", "Bedfordview", "Benoni", "Boksburg", "Brakpan", "Centurion", "Pretoria", "Krugersdorp", "Mogale City Local Municipality"];
 
 function getCurrentPosition(): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) => {
@@ -44,7 +44,7 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
   const [phone, setPhone] = useState(profile?.phone ?? "");
   const [services, setServices] = useState<string[]>(profile?.services ?? []);
-  const [areas, setAreas] = useState((profile?.service_areas ?? []).join(", "));
+  const [areas, setAreas] = useState<string[]>(profile?.service_areas ?? []);\n  const [areaPickerOpen, setAreaPickerOpen] = useState(false);
   const [radius, setRadius] = useState(String(profile?.search_radius_km ?? 10));
   const [experience, setExperience] = useState(String(profile?.years_experience ?? 0));
   const [bio, setBio] = useState(profile?.bio ?? "");
@@ -57,7 +57,7 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
     setServices(current => current.includes(service) ? current.filter(item => item !== service) : [...current, service]);
   }
 
-  async function save(event: React.FormEvent<HTMLFormElement>) {
+  function toggleArea(area: string) {\n    setAreas(current => current.includes(area) ? current.filter(item => item !== area) : [...current, area]);\n  }\n\n  async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true); setError(""); setMessage("");
     const years = Number(experience);
@@ -94,7 +94,7 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
       full_name: fullName.trim(),
       phone: phone.trim() || null,
       services,
-      service_areas: areas.split(",").map(area => area.trim()).filter(Boolean),
+      service_areas: areas,
       search_radius_km: Number(radius),
       years_experience: years,
       bio: bio.trim() || null,
@@ -118,7 +118,7 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
     <input id="handyman-phone" type="tel" placeholder="+27..." value={phone} onChange={e=>setPhone(e.target.value)} />
     <span className="field-label">Services you offer</span>
     <div className="choice-grid">{serviceOptions.map(service=><label key={service} className="choice-option"><input type="checkbox" checked={services.includes(service)} onChange={()=>toggleService(service)} /> {service}</label>)}</div>
-    <label className="field-label" htmlFor="handyman-radius">How far are you willing to travel?</label>
+    <span className="field-label">Areas where you can work</span>\n    <button className="btn btn-secondary" type="button" onClick={() => setAreaPickerOpen(current => !current)} aria-expanded={areaPickerOpen}>\n      {areaPickerOpen ? "Close area list" : "Choose service areas"}\n    </button>\n    {areas.length > 0 ? <p className="form-hint">Selected: {areas.join(", ")}</p> : <p className="form-hint">Choose at least one area so we can match you with nearby jobs.</p>}\n    {areaPickerOpen && <div className="choice-grid" role="group" aria-label="Select service areas">\n      {serviceAreaOptions.map(area => <label key={area} className="choice-option"><input type="checkbox" checked={areas.includes(area)} onChange={() => toggleArea(area)} /> {area}</label>)}\n      <button className="btn btn-orange" type="button" onClick={() => setAreaPickerOpen(false)}>Done</button>\n    </div>}\n    <label className="field-label" htmlFor="handyman-radius">How far are you willing to travel?</label>
     <select className="choice-select" id="handyman-radius" value={radius} onChange={e=>setRadius(e.target.value)}>
       <option value="5">5 km</option><option value="10">10 km (recommended)</option><option value="20">20 km</option><option value="30">30 km</option>
     </select>
