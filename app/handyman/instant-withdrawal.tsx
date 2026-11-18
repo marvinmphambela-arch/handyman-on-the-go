@@ -53,7 +53,7 @@ export default function InstantWithdrawal({ availableAmount }: { availableAmount
         <>
           {error && <p className="error-note">{error}</p>}
           {message && <p className="success-note">{message}</p>}
-          <button className="btn btn-dark" type="button" onClick={() => { setError(null); setMessage(null); setConfirming(true); }} disabled={availableAmount <= 0 || busy}>
+          <button className="btn btn-orange" type="button" onClick={() => { setError(null); setMessage(null); setConfirming(true); }} disabled={availableAmount <= 0 || busy}>
             Withdraw
           </button>
         </>
@@ -66,7 +66,7 @@ export default function InstantWithdrawal({ availableAmount }: { availableAmount
           </div>
           {error && <p className="error-note">{error}</p>}
           <div className="withdraw-actions">
-            <button className="btn btn-light" type="button" onClick={() => setConfirming(false)} disabled={busy}>Cancel</button>
+            <button className="btn btn-outline-dark" type="button" onClick={() => setConfirming(false)} disabled={busy}>Cancel</button>
             <button className="btn btn-dark" type="button" onClick={submit} disabled={busy}>
               {busy ? "Processing…" : "Confirm Withdrawal"}
             </button>
