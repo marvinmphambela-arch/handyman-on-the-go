@@ -11,6 +11,7 @@ import HandymanDashboardTabs from "@/components/handyman-dashboard-tabs";
 import AccessWalletTopup from "@/components/access-wallet-topup";
 import HandymanBankAccountForm from "./bank-account-form";
 import JobRadarSearch from "@/components/job-radar-search";
+import InstantWithdrawal from "./instant-withdrawal";
 
 type DashboardJob = {
   id: string;
@@ -144,6 +145,9 @@ export default async function HandymanDashboard() {
     daily?: { day: string; total_zar: number; platform_zar: number; direct_zar: number }[];
   };
   const platformHeldEarnings = Number(earningsSummary.platform_held_zar ?? 0);
+  const instantEligibleEarnings = earnings
+    .filter(item => item.payment_method === "platform" && ["held", "available"].includes(item.status))
+    .reduce((sum, item) => sum + Number(item.net_earnings_zar || 0), 0);
   const paidEarnings = Number(earningsSummary.platform_paid_zar ?? 0);
   const directEftEarnings = Number(earningsSummary.direct_payment_zar ?? 0);
   const weeklyDaily = earningsSummary.daily ?? [];
@@ -256,6 +260,10 @@ export default async function HandymanDashboard() {
   <section className="request-card earnings-balance-card"><small>ACCESS WALLET</small><h3>R{accessWalletBalance.toLocaleString("en-ZA")}</h3></section>
   <section className="request-card earnings-balance-card"><small>DIRECT PAYMENT EARNINGS</small><h3>R{directEftEarnings.toLocaleString("en-ZA")}</h3></section>
   <section className="request-card earnings-balance-card"><small>OUTSTANDING COMMISSION</small><h3>R{outstandingCommission.toLocaleString("en-ZA")}</h3></section>
+</div>
+
+<InstantWithdrawal availableAmount={instantEligibleEarnings} />
+
 </div>
 
 <details className="earnings-details earnings-section-details">
