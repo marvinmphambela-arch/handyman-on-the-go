@@ -302,3 +302,55 @@ select:disabled { opacity: .65; cursor: not-allowed; }
 @keyframes radar-pulse{0%,100%{opacity:.45;transform:scale(.8)}50%{opacity:1;transform:scale(1.25)}}
 @media(max-width:600px){.job-radar-card{grid-template-columns:1fr;padding:24px 20px;gap:6px}.job-radar-copy{text-align:center}.job-radar-copy p{margin:auto}.job-radar-visual{height:215px;margin:auto}.radar-display{width:190px;height:190px}.job-radar-action{margin-inline:auto}}
 @media(prefers-reduced-motion:reduce){.radar-sweep,.radar-dot{animation:none!important}}
+
+
+/* Platform-wide button standard */
+.btn {
+  min-height: 46px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform .2s, background .2s, border-color .2s, box-shadow .2s, opacity .2s;
+}
+.btn:hover:not(:disabled) { transform: translateY(-2px); }
+.btn:focus-visible { outline: 3px solid #f28a3240; outline-offset: 2px; }
+.btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.btn-primary,
+.btn-orange,
+.btn-dark {
+  background: var(--orange);
+  color: #172b3b;
+  border-color: var(--orange);
+  box-shadow: 0 8px 20px #f28a3230;
+}
+.btn-primary:hover:not(:disabled),
+.btn-orange:hover:not(:disabled),
+.btn-dark:hover:not(:disabled) {
+  background: var(--orange2);
+  border-color: var(--orange2);
+}
+.btn-secondary,
+.btn-outline-dark {
+  background: #fff;
+  color: var(--navy);
+  border-color: #cbd5d1;
+  box-shadow: none;
+}
+.btn-secondary:hover:not(:disabled),
+.btn-outline-dark:hover:not(:disabled) {
+  background: #f7f8f7;
+  border-color: #9aabb6;
+}
+.btn-danger {
+  background: #b13d38;
+  color: #fff;
+  border-color: #b13d38;
+  box-shadow: none;
+}
+@media(max-width:760px) {
+  .btn { min-height: 44px; padding: 0 16px; font-size: 12px; }
+}
