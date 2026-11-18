@@ -354,3 +354,29 @@ select:disabled { opacity: .65; cursor: not-allowed; }
 @media(max-width:760px) {
   .btn { min-height: 44px; padding: 0 16px; font-size: 12px; }
 }
+
+
+/* Customer dashboard: grouped, expandable job history */
+.customer-job-groups{display:grid;gap:14px;margin-top:18px}
+.customer-job-group{border:1px solid #e3e9e5;border-radius:15px;background:#fff;overflow:hidden;box-shadow:0 8px 24px #18372a08}
+.customer-group-summary{display:flex;align-items:center;gap:14px;padding:19px 21px;cursor:pointer;list-style:none}
+.customer-group-summary::-webkit-details-marker{display:none}
+.customer-group-copy{display:grid;gap:5px;flex:1;min-width:0}
+.customer-group-copy strong{font-size:15px;color:var(--navy)}
+.customer-group-copy small{font-size:11px;color:var(--muted);line-height:1.5}
+.customer-group-count{display:grid;place-items:center;min-width:30px;height:30px;padding:0 8px;border-radius:20px;background:#fff1e6;color:#9b531e;font-size:11px;font-weight:800}
+.customer-group-chevron{font-size:21px;color:#c8793d;transition:transform .2s}
+.customer-job-group[open] .customer-group-chevron{transform:rotate(180deg)}
+.customer-group-content{display:grid;gap:12px;padding:0 14px 14px;border-top:1px solid #edf0ed}
+.customer-job-card{padding:20px 22px;box-shadow:none}
+.customer-job-topline{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.customer-job-title{font-size:19px;letter-spacing:-.45px;margin:12px 0 5px;color:var(--navy)}
+.customer-job-location{font-size:11px;color:var(--muted);margin:0 0 14px}
+.customer-job-details{border-top:1px solid #edf0ed;margin-top:12px}
+.customer-job-details>summary{display:flex;align-items:center;justify-content:space-between;padding:13px 0 2px;cursor:pointer;list-style:none;color:#a65b28;font-size:11px;font-weight:800}
+.customer-job-details>summary::-webkit-details-marker{display:none}
+.customer-job-details>summary:after{content:"+";font-size:18px;line-height:1}
+.customer-job-details[open]>summary:after{content:"−"}
+.customer-job-detail-content{padding-top:10px}
+.customer-job-detail-content>.section-heading{margin-top:18px}
+@media(max-width:600px){.customer-group-summary{padding:16px;gap:10px}.customer-group-copy strong{font-size:13px}.customer-group-copy small{font-size:10px}.customer-group-content{padding:0 9px 9px}.customer-job-card{padding:17px 14px}.customer-job-title{font-size:17px}}
