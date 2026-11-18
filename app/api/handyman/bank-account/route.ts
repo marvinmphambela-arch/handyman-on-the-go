@@ -112,6 +112,8 @@ export async function PUT(request: Request) {
         account_type: accountType,
         account_number_ciphertext: ciphertext,
         account_number_last4: accountNumber.slice(-4),
+        // A bank-detail change invalidates the previous Paystack recipient.
+        paystack_recipient_code: null,
         is_active: true,
         updated_at: new Date().toISOString()
       }, { onConflict: "handyman_id" })
