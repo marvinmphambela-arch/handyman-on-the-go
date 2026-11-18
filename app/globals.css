@@ -380,3 +380,9 @@ select:disabled { opacity: .65; cursor: not-allowed; }
 .customer-job-detail-content{padding-top:10px}
 .customer-job-detail-content>.section-heading{margin-top:18px}
 @media(max-width:600px){.customer-group-summary{padding:16px;gap:10px}.customer-group-copy strong{font-size:13px}.customer-group-copy small{font-size:10px}.customer-group-content{padding:0 9px 9px}.customer-job-card{padding:17px 14px}.customer-job-title{font-size:17px}}
+
+
+/* Handyman opportunity payment method badges */
+.payment-method-badge{display:inline-flex;align-items:center;width:max-content;max-width:100%;margin:10px 0 12px;padding:6px 11px;border:1px solid transparent;border-radius:999px;font-size:11px;font-weight:800;line-height:1.2;letter-spacing:.15px}
+.payment-method-platform{background:#eaf2ff;border-color:#c9dcff;color:#244f91}
+.payment-method-direct{background:#e9f7ef;border-color:#c7e8d3;color:#246b43}
