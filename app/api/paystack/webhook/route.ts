@@ -5,8 +5,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const secret = process.env.PAYSTACK_SECRET_KEY;
-  if (!secret) return NextResponse.json({ error: "Webhook is not configured." }, { status: 503 });
+  const paymentSecret = process.env.PAYSTACK_SECRET_KEY;
+  const transferSecret = process.env.PAYSTACK_TRANSFER_SECRET_KEY;
+  if (!paymentSecret && !transferSecret) {
+    return NextResponse.json({ error: "Webhook is not configured." }, { status: 503 });
+  }
 
   const rawBody = await request.text();
   const signature = request.headers.get("x-paystack-signature");
@@ -14,14 +17,63 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
   }
 
-  const expected = createHmac("sha512", secret).update(rawBody).digest();
   const supplied = Buffer.from(signature, "hex");
-  if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
+  const secrets = [paymentSecret, transferSecret].filter((value): value is string => Boolean(value));
+  const validSignature = secrets.some(secret => {
+    const expected = createHmac("sha512", secret).update(rawBody).digest();
+    return supplied.length === expected.length && timingSafeEqual(supplied, expected);
+  });
+  if (!validSignature) {
     return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
   }
 
   try {
     const event = JSON.parse(rawBody);
+    const admin = createAdminClient();
+
+    if (["transfer.success", "transfer.failed", "transfer.reversed"].includes(event.event)) {
+      const transfer = event.data;
+      const reference = transfer?.reference;
+      const currency = transfer?.currency;
+      const amount = Number(transfer?.amount);
+
+      if (typeof reference !== "string" || currency !== "ZAR" || !Number.isSafeInteger(amount) || amount <= 0) {
+        return NextResponse.json({ received: true });
+      }
+
+      const { data: payout, error: payoutLookupError } = await admin
+        .from("handyman_payout_requests")
+        .select("id, net_amount_zar, status, transfer_reference")
+        .eq("transfer_reference", reference)
+        .maybeSingle();
+
+      if (payoutLookupError) throw payoutLookupError;
+      if (!payout || payout.transfer_reference !== reference) {
+        return NextResponse.json({ received: true });
+      }
+
+      // Paystack amounts are in the currency subunit. For ZAR that is cents.
+      if (amount !== payout.net_amount_zar * 100) {
+        return NextResponse.json({ received: true });
+      }
+
+      const statusMap: Record<string, "success" | "failed" | "reversed"> = {
+        "transfer.success": "success",
+        "transfer.failed": "failed",
+        "transfer.reversed": "reversed"
+      };
+
+      const { error: settleError } = await admin.rpc("settle_handyman_payout", {
+        p_transfer_reference: reference,
+        p_transfer_status: statusMap[event.event],
+        p_failure_reason: typeof transfer?.failures === "string"
+          ? transfer.failures
+          : transfer?.failures ? JSON.stringify(transfer.failures) : null
+      });
+      if (settleError) throw settleError;
+
+      return NextResponse.json({ received: true, payoutProcessed: true });
+    }
     if (event.event !== "charge.success") return NextResponse.json({ received: true });
 
     const payment = event.data;
@@ -30,7 +82,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true });
     }
 
-    const admin = createAdminClient();
     const metadata = payment.metadata || {};
 
     // Customer job payments are matched against the server-created payment row.
