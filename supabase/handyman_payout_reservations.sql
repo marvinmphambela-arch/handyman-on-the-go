@@ -26,7 +26,7 @@ create table if not exists public.handyman_payout_request_earnings (
   primary key (payout_request_id, earning_id)
 );
 
-create unique index if not exists handyman_payout_request_earnings_earning_uidx
+create index if not exists handyman_payout_request_earnings_earning_idx
   on public.handyman_payout_request_earnings (earning_id);
 
 alter table public.handyman_payout_request_earnings enable row level security;
@@ -131,7 +131,7 @@ begin
     and e.payment_method = 'platform'
     and e.status in ('held','available')
     and cp.status = 'paid'
-    and j.status = 'completed'::public.job_status
+    and j.status::text = 'completed'
     and e.net_earnings_zar > e.paid_out_zar + e.payout_reserved_zar;
 
   if p_amount_zar > v_eligible then
