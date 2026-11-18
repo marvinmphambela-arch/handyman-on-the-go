@@ -116,8 +116,8 @@ export async function POST(request: Request) {
     if (payoutError) throw payoutError;
 
     const payoutRequestId = payout?.payout_request_id;
-    const netAmountZar = Number(payout?.net_amount_zar);
-    if (typeof payoutRequestId !== "string" || !Number.isSafeInteger(netAmountZar) || netAmountZar <= 0) {
+    const netAmountKobo = Number(payout?.net_amount_kobo);
+    if (typeof payoutRequestId !== "string" || !Number.isSafeInteger(netAmountKobo) || netAmountKobo <= 0) {
       throw new Error("Payout request was created without a valid transfer amount.");
     }
 
@@ -172,7 +172,8 @@ export async function POST(request: Request) {
       payoutRequestId,
       grossAmountZar: payout.gross_amount_zar,
       feeAmountZar: payout.fee_amount_zar,
-      netAmountZar,
+      netAmountZar: netAmountKobo / 100,
+      netAmountKobo,
       transferStatus,
       transferReference: reference
     });
