@@ -79,7 +79,7 @@ export default async function AccountPage() {
     <RealtimeRefresh />
     <header className="request-nav"><div className="container request-nav-inner">
       <Link className="brand" href="/"><span className="brand-mark"><span className="brand-monogram">HGO</span><span className="brand-underline"/></span><span className="brand-name">Handyman <span className="brand-accent">On The Go</span><sup>™</sup></span></Link>
-      <Link href="/request" className="btn btn-post-job">Post a job</Link>
+      <Link href="/request" className="btn btn-orange">Post a job</Link>
     </div></header>
     <div className="container request-shell">
       <div className="request-heading"><div className="eyebrow">CUSTOMER DASHBOARD</div><h1>Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}.</h1><p>Compare handyman offers and choose the one that works best for you.</p></div>
