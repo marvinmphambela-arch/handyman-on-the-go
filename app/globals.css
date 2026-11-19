@@ -389,3 +389,42 @@ select:disabled { opacity: .65; cursor: not-allowed; }
 
 .payment-method-badge{display:inline-flex;align-items:center;gap:7px}
 .payment-method-icon{display:inline-flex;align-items:center;font-size:15px;line-height:1}
+
+
+/* Refined handyman instant withdrawal panel */
+.earnings-withdraw-card{padding:26px;margin:16px 0;background:#fff;border:1px solid #e1e8e4;box-shadow:0 12px 32px #18372a0b}
+.withdraw-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.withdraw-heading .eyebrow{color:#d77c37}
+.withdraw-heading h3{font-size:22px;letter-spacing:-.6px;color:var(--navy);margin:8px 0 6px}
+.withdraw-heading p{font-size:12px;line-height:1.6;color:var(--muted);margin:0;max-width:430px}
+.withdraw-heading-icon{display:grid;place-items:center;width:42px;height:42px;flex:0 0 42px;border-radius:13px;background:#fff1e6;color:#b9652b;font-size:23px;font-weight:800}
+.withdraw-available-panel{display:grid;gap:5px;margin:22px 0;padding:20px 22px;border-radius:13px;background:linear-gradient(115deg,#10283d,#173b55);color:#fff}
+.withdraw-available-panel>span,.withdraw-confirmation-heading>span{font-size:9px;letter-spacing:1.3px;font-weight:850;color:#cbd8de}
+.withdraw-available-panel>strong{font-size:clamp(28px,5vw,36px);line-height:1.15;letter-spacing:-1.1px;font-variant-numeric:tabular-nums}
+.withdraw-available-panel>small{font-size:10px;color:#d2dfe4}
+.withdraw-entry{display:grid;gap:13px}
+.withdraw-amount-field{display:grid;gap:8px}
+.withdraw-amount-field>span{font-size:12px;font-weight:750;color:var(--navy)}
+.withdraw-input-wrap{display:flex;align-items:center;gap:9px;min-height:58px;padding:0 15px;border:1.5px solid #cbd6d0;border-radius:11px;background:#fff}
+.withdraw-input-wrap:focus-within{border-color:#df8b4b;box-shadow:0 0 0 3px #f28a321c}
+.withdraw-input-wrap>span{font-size:20px;font-weight:800;color:#829094}
+.request-card .withdraw-input-wrap input{min-width:0;min-height:54px;padding:0;border:0;box-shadow:none!important;font-size:22px;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums}
+.withdraw-fee-note{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #edf0ed;color:#657478;font-size:11px}
+.withdraw-fee-note b{color:var(--navy);font-size:12px}
+.withdraw-fee-note small{font-size:10px;font-weight:500;color:#829094}
+.withdraw-helper{margin:0;color:#71808a;font-size:11px;line-height:1.65}
+.withdraw-primary{width:100%;justify-content:center;gap:12px;margin-top:3px}
+.withdraw-confirmation{display:grid;gap:14px}
+.withdraw-confirmation-heading h4{font-size:20px;letter-spacing:-.5px;color:var(--navy);margin:7px 0 0}
+.withdraw-confirmation-heading>span{color:#d77c37}
+.withdraw-breakdown{padding:5px 16px;border:1px solid #e5ebe7;border-radius:11px}
+.withdraw-breakdown>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #edf0ed;font-size:12px}
+.withdraw-breakdown>div:last-child{border-bottom:0}
+.withdraw-breakdown span{color:#657478}
+.withdraw-breakdown b{color:var(--navy);font-variant-numeric:tabular-nums}
+.withdraw-breakdown .withdraw-net-row{padding:15px 0}
+.withdraw-net-row span{font-weight:800;color:var(--navy)}
+.withdraw-net-row strong{font-size:20px;color:#26734f;font-variant-numeric:tabular-nums}
+.withdraw-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.withdraw-empty-note{margin:14px 0 0;padding:12px 14px;border-radius:9px;background:#f6f7f5;color:#657478;font-size:11px;line-height:1.6}
+@media(max-width:600px){.earnings-withdraw-card{padding:21px 17px}.withdraw-heading h3{font-size:20px}.withdraw-available-panel{padding:18px}.withdraw-actions{display:grid;grid-template-columns:1fr 1.4fr}.withdraw-actions .btn{padding:0 10px;font-size:11px}}
