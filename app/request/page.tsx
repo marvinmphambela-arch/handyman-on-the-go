@@ -169,7 +169,7 @@ export default function NewRequestPage() {
           <div className="privacy-note">Your selected payment method will be saved with this request and shown to matching handymen before they make an offer. You can review offers before accepting one.</div>
         </div>}
         {error && <div className="form-error" role="alert">{error}{error.startsWith("Please sign in") && <> <Link href="/login">Sign in here</Link>.</>}</div>}
-        <div className="form-actions">{step > 0 && <button className="btn btn-outline-dark" type="button" disabled={saving} onClick={() => {setError("");setStep((current) => current - 1);}}>Back</button>}{step < 2 ? <button className="btn btn-orange" type="button" onClick={next}>Continue <ArrowRight size={16}/></button> : <button className="btn btn-orange" type="button" disabled={saving} onClick={submitRequest}>{saving ? "Saving..." : "Submit job request"} <Check size={16}/></button>}</div>
+        <div className="form-actions">{step > 0 && <button className="btn btn-outline-dark" type="button" disabled={saving} onClick={() => {setError("");setStep((current) => current - 1);}}>Back</button>}{step < 2 ? <button className="btn btn-orange" type="button" onClick={next}>Continue <ArrowRight size={16}/></button> : <button className="btn btn-post-job" type="button" disabled={saving} onClick={submitRequest}>{saving ? "Saving..." : "Submit job request"} <Check size={16}/></button>}</div>
       </section>}
       <p className="request-footnote">Handyman on the Go · Your Home. Your Choice. Your Handyman.</p>
     </div>
