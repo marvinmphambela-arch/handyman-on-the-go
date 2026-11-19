@@ -151,7 +151,7 @@ export default function SharedNotificationCenter({ role }: { role: "customer" | 
                         <p>{item.message}</p>
                         <small>{timeLabel(item.created_at)}</small>
                         <div className="shared-notification-actions">
-                          <Link href={href} onClick={() => { if (!item.read_at) void markAsRead(item.id); }}>View booking</Link>
+                          <Link href={href} onClick={() => { if (item.job_id) { const target = document.getElementById(`${role === "customer" ? "job" : "booking"}-${item.job_id}`); target?.closest("details")?.setAttribute("open", ""); } if (!item.read_at) void markAsRead(item.id); }}>View booking</Link>
                           {!item.read_at && <button type="button" onClick={() => void markAsRead(item.id)}>Mark as read</button>}
                         </div>
                       </div>
