@@ -28,16 +28,8 @@ begin
       ), 0),
     'platform_available_zar',
       coalesce((
-        select sum(greatest(e2.net_earnings_zar - e2.paid_out_zar - e2.payout_reserved_zar, 0))
-        from public.handyman_earnings e2
-        join public.customer_job_payments cp on cp.job_id = e2.job_id
-        join public.jobs j on j.id = e2.job_id
-        where e2.handyman_id = p_handyman_id
-          and e2.payment_method = 'platform'
-          and e2.status in ('held', 'available')
-          and cp.status = 'paid'
-          and j.status::text = 'completed'
-          and e2.net_earnings_zar > e2.paid_out_zar + e2.payout_reserved_zar
+        select sum(eligible.remaining_zar)
+        from public.get_handyman_withdrawable_earnings(p_handyman_id) eligible
       ), 0),
     'platform_paid_zar',
       coalesce(sum(net_earnings_zar) filter (
