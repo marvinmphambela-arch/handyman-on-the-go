@@ -637,3 +637,23 @@ select:disabled { opacity: .65; cursor: not-allowed; }
   .shared-notification-item { gap: 9px; padding: 11px; }
   .shared-notification-icon { width: 32px; height: 32px; flex-basis: 32px; font-size: 14px; }
 }
+
+
+/* High-visibility customer job-posting action */
+.btn-post-job {
+  background: linear-gradient(135deg, #35e477 0%, #16c85b 55%, #0eae4b 100%);
+  color: #07351c;
+  border: 1px solid #12b653;
+  box-shadow: 0 0 0 3px #28dc6b24, 0 8px 22px #12b65355, 0 0 20px #28dc6b55;
+  font-weight: 900;
+  letter-spacing: .1px;
+}
+.btn-post-job:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5af28e 0%, #22dc68 55%, #13bf54 100%);
+  border-color: #0caa4a;
+  box-shadow: 0 0 0 4px #28dc6b30, 0 10px 26px #12b65366, 0 0 25px #28dc6b70;
+}
+.btn-post-job:focus-visible {
+  outline: 3px solid #12b65370;
+  outline-offset: 4px;
+}
