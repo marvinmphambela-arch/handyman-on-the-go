@@ -5,7 +5,7 @@ create or replace function public.get_handyman_earnings_summary(p_handyman_id uu
 returns jsonb
 language plpgsql
 stable
-security invoker
+security definer
 set search_path = ''
 as $$
 declare
