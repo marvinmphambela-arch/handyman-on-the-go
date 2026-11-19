@@ -141,14 +141,12 @@ export default async function HandymanDashboard() {
   const payouts = (payoutsResult.data ?? []) as PayoutRecord[];
   const outstandingCommission = (carryforwardsResult.data ?? []).reduce((sum, item) => sum + Number(item.remaining_amount_zar || 0), 0);
   const earningsSummary = (earningsSummaryResult.data ?? {}) as {
-    platform_held_zar?: number; platform_paid_zar?: number; direct_payment_zar?: number;
+    platform_held_zar?: number; platform_available_zar?: number; platform_paid_zar?: number; direct_payment_zar?: number;
     week_total_zar?: number; week_platform_zar?: number; week_direct_zar?: number;
     daily?: { day: string; total_zar: number; platform_zar: number; direct_zar: number }[];
   };
-  const platformHeldEarnings = Number(earningsSummary.platform_held_zar ?? 0);
-  const instantEligibleEarnings = earnings
-    .filter(item => item.payment_method === "platform" && ["held", "available"].includes(item.status))
-    .reduce((sum, item) => sum + Number(item.net_earnings_zar || 0), 0);
+  const platformHeldEarnings = Number(earningsSummary.platform_available_zar ?? 0);
+  const instantEligibleEarnings = platformHeldEarnings;
   const paidEarnings = Number(earningsSummary.platform_paid_zar ?? 0);
   const directEftEarnings = Number(earningsSummary.direct_payment_zar ?? 0);
   const weeklyDaily = earningsSummary.daily ?? [];
