@@ -7,6 +7,7 @@ import CancelBookingButton from "@/components/cancel-booking-button";
 import FindReplacementHandyman from "@/components/find-replacement-handyman";
 import StatusBadge from "@/components/status-badge";
 import ConfirmJobCompletionButton from "@/components/confirm-job-completion-button";
+import SharedNotificationCenter from "@/components/shared-notification-center";
 
 type Offer = {
   id: string;
@@ -82,6 +83,7 @@ export default async function AccountPage() {
     </div></header>
     <div className="container request-shell">
       <div className="request-heading"><div className="eyebrow">CUSTOMER DASHBOARD</div><h1>Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}.</h1><p>Compare handyman offers and choose the one that works best for you.</p></div>
+      <SharedNotificationCenter role="customer" />
       <div className="section-heading"><div><div className="eyebrow">YOUR HOME SERVICES</div><h2>My job requests</h2></div><Link href="/request" className="text-link">Post another job</Link></div>
       {error && <section className="request-card"><h2>We couldn't load your requests.</h2><p>Please refresh the page. If this continues, contact support.</p></section>}
       {!error && jobs.length === 0 && <section className="request-card completion"><h2>No job requests yet.</h2><p>When you post a home service request, it will appear here with any offers from handymen.</p><Link href="/request" className="btn btn-orange">Post your first job</Link></section>}
@@ -106,7 +108,7 @@ export default async function AccountPage() {
               const offers = job.job_offers ?? [];
               const acceptedOffer = offers.find(offer => offer.status === "accepted");
               const canChoose = job.status === "open" && !acceptedOffer;
-              return <article className="request-card customer-job-card" key={job.id}>
+              return <article className="request-card customer-job-card" id={`job-${job.id}`} key={job.id}>
                 <div className="customer-job-topline"><div className="eyebrow">{category ?? "Home service"}</div><StatusBadge status={job.status} /></div>
                 <h3 className="customer-job-title">{job.title}</h3>
                 <p className="customer-job-location">{job.suburb ? job.suburb + ", " : ""}{job.city} · {job.urgency}</p>
