@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 
 const tabs = [
   { id: "home", label: "Home" },
@@ -15,10 +16,25 @@ type TabId = typeof tabs[number]["id"];
 export default function HandymanDashboardTabs({ home, bookings, cancellations, earnings, profile }: {
   home: ReactNode; bookings: ReactNode; cancellations: ReactNode; earnings: ReactNode; profile: ReactNode;
 }) {
+  const searchParams = useSearchParams();
   const [active, setActive] = useState<TabId>("home");
+
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("section") === "earnings") setActive("earnings");
-  }, []);
+    const section = searchParams.get("section");
+    if (section === "earnings" || section === "bookings") setActive(section);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (active !== "bookings") return;
+    const hash = window.location.hash;
+    if (!hash.startsWith("#booking-")) return;
+    const targetId = decodeURIComponent(hash.slice(1));
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    target.closest("details")?.setAttribute("open", "");
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [active]);
+
   const panels: Record<TabId, ReactNode> = { home, bookings, cancellations, earnings, profile };
   return <>
     <nav className="handyman-dashboard-nav" aria-label="Dashboard sections">
