@@ -61,19 +61,9 @@ begin
     raise exception 'You already have a withdrawal being processed.';
   end if;
 
-  select coalesce(sum(
-    greatest(e.net_earnings_zar - e.paid_out_zar - e.payout_reserved_zar, 0)
-  ), 0)
+  select coalesce(sum(eligible.remaining_zar), 0)
     into v_eligible
-  from public.handyman_earnings e
-  join public.customer_job_payments cp on cp.job_id = e.job_id
-  join public.jobs j on j.id = e.job_id
-  where e.handyman_id = v_handyman_id
-    and e.payment_method = 'platform'
-    and e.status in ('held','available')
-    and cp.status = 'paid'
-    and j.status::text = 'completed'
-    and e.net_earnings_zar > e.paid_out_zar + e.payout_reserved_zar;
+  from public.get_handyman_withdrawable_earnings(v_handyman_id) eligible;
 
   if p_amount_zar > v_eligible then
     raise exception 'You do not have enough eligible earnings for this withdrawal.';
@@ -102,19 +92,11 @@ begin
   returning id into v_request_id;
 
   for v_earning in
-    select e.id,
-           greatest(e.net_earnings_zar - e.paid_out_zar - e.payout_reserved_zar, 0) as remaining
-    from public.handyman_earnings e
-    join public.customer_job_payments cp on cp.job_id = e.job_id
-    join public.jobs j on j.id = e.job_id
-    where e.handyman_id = v_handyman_id
-      and e.payment_method = 'platform'
-      and e.status in ('held','available')
-      and cp.status = 'paid'
-      and j.status = 'completed'::public.job_status
-      and e.net_earnings_zar > e.paid_out_zar + e.payout_reserved_zar
-    order by e.completed_at, e.id
-    for update
+    select e.id, eligible.remaining_zar as remaining
+    from public.get_handyman_withdrawable_earnings(v_handyman_id) eligible
+    join public.handyman_earnings e on e.id = eligible.earning_id
+    order by eligible.completed_at, eligible.earning_id
+    for update of e
   loop
     exit when v_gross <= 0;
     v_take := least(v_earning.remaining, v_gross);
