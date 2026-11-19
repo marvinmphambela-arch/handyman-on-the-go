@@ -12,6 +12,7 @@ import AccessWalletTopup from "@/components/access-wallet-topup";
 import HandymanBankAccountForm from "./bank-account-form";
 import JobRadarSearch from "@/components/job-radar-search";
 import InstantWithdrawal from "./instant-withdrawal";
+import SharedNotificationCenter from "@/components/shared-notification-center";
 
 type DashboardJob = {
   id: string;
@@ -165,6 +166,7 @@ export default async function HandymanDashboard() {
         <div className="eyebrow">HANDYMAN WORKSPACE</div>
         <h1>Your handyman dashboard.</h1>
         <p>See new opportunities, active bookings and important updates in one place.</p>
+        <SharedNotificationCenter role="handyman" />
         <div className="button-row"><Link className="btn btn-dark" href="/handyman/verification">Identity verification</Link></div>
       </div>
 
@@ -191,7 +193,7 @@ export default async function HandymanDashboard() {
         bookings={<>
 <div className="section-heading" id="my-bookings"><div><div className="eyebrow">YOUR WORK</div><h2>Active bookings ({bookings.length})</h2></div></div>
       {bookings.length === 0 ? <section className="request-card"><p className="privacy-note">No active bookings yet. When a customer accepts your offer, the booking will appear here automatically.</p></section> :
-        <div className="job-list">{bookings.map(booking => <article className="request-card" key={booking.id}>
+        <div className="job-list">{bookings.map(booking => <article className="request-card" id={`booking-${booking.id}`} key={booking.id}>
           <div className="eyebrow"><StatusBadge status={booking.status} /> · <span className="capitalize">{booking.urgency}</span></div>
           <h2>{booking.title}</h2><p>{booking.description}</p>
           <div className="review-summary">
