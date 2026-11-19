@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -33,6 +34,7 @@ function timeLabel(value: string) {
 }
 
 export default function SharedNotificationCenter({ role }: { role: "customer" | "handyman" }) {
+  const router = useRouter();
   const [items, setItems] = useState<NotificationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -66,8 +68,17 @@ export default function SharedNotificationCenter({ role }: { role: "customer" | 
         event: "*",
         schema: "public",
         table: "notifications",
-      }, () => {
-        if (active) void loadNotifications();
+      }, (payload) => {
+        if (!active) return;
+        void loadNotifications();
+        if (
+          role === "customer" &&
+          payload.eventType === "INSERT" &&
+          payload.new.recipient_role === "customer" &&
+          payload.new.notification_type === "handyman_offer_received"
+        ) {
+          router.refresh();
+        }
       })
       .subscribe();
 
@@ -75,7 +86,7 @@ export default function SharedNotificationCenter({ role }: { role: "customer" | 
       active = false;
       void supabase.removeChannel(channel);
     };
-  }, [loadNotifications, role, supabase]);
+  }, [loadNotifications, role, router, supabase]);
 
   const unreadCount = items.filter(item => !item.read_at).length;
 
