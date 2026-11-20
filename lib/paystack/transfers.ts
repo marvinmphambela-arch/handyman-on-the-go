@@ -77,6 +77,9 @@ export type PaystackTransferResponse = {
     currency: string;
     status: "pending" | "success" | "otp" | "failed" | "reversed" | string;
     failures?: unknown;
+    recipient?: {
+      recipient_code?: string;
+    } | number;
   };
 };
 
