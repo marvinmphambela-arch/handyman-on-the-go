@@ -160,7 +160,7 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
     <div className="customer-profile-row">
       <h2>Professional details</h2>
       {isEditing
-        ? <button className="btn btn-secondary" type="button" onClick={closeWithoutSaving}>Close</button>
+        ? <button className="btn btn-primary" type="button" onClick={closeWithoutSaving}>Close</button>
         : <button className="btn btn-secondary" type="button" onClick={() => { setError(""); setMessage(""); setIsEditing(true); }}>Edit Profile</button>}
     </div>
     {!isEditing && <p className="form-hint">Your professional details are saved. Select Edit Profile to make changes.</p>}
