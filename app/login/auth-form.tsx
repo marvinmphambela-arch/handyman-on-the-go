@@ -7,6 +7,15 @@ import { createClient } from "@/lib/supabase/client";
 
 type Mode = "login" | "signup";
 
+function isValidEmail(value: string) {
+  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(value.trim());
+}
+
+function isValidSouthAfricanPhone(value: string) {
+  const compact = value.replace(/[\\s()-]/g, "");
+  return /^(?:0[1-8]\\d{8}|\\+27[1-8]\\d{8})$/.test(compact);
+}
+
 export default function AuthForm({ mode }: { mode: Mode }) {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
@@ -28,6 +37,14 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     event.preventDefault();
     setBusy(true); setError(""); setMessage("");
     try {
+      if (!isValidEmail(email)) {
+        setError("Enter a valid email address, for example name@example.com.");
+        return;
+      }
+      if (mode === "signup" && !isValidSouthAfricanPhone(phone)) {
+        setError("Enter a valid South African phone number, for example 082 123 4567 or +27 82 123 4567.");
+        return;
+      }
       const supabase = createClient();
       if (mode === "signup") {
         const { data, error: authError } = await supabase.auth.signUp({
@@ -61,9 +78,9 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     <div className="container request-shell"><div className="request-heading"><div className="eyebrow">YOUR HANDYMAN ON THE GO ACCOUNT</div><h1>{mode === "signup" ? "Join the community." : "Welcome back."}</h1><p>{mode === "signup" ? "Create an account to get started as a customer or handyman." : "Sign in to continue to your account."}</p></div>
       <form className="request-card form-step" onSubmit={submit}>
         {mode === "signup" && <><label className="field-label" htmlFor="full-name">Full name</label><input id="full-name" autoComplete="name" required value={fullName} onChange={e=>setFullName(e.target.value)} maxLength={100} />
-          <label className="field-label" htmlFor="phone">Phone number</label><input id="phone" type="tel" autoComplete="tel" placeholder="+27..." required minLength={7} maxLength={25} value={phone} onChange={e=>setPhone(e.target.value)} />
+          <label className="field-label" htmlFor="phone">Phone number</label><input id="phone" type="tel" autoComplete="tel" placeholder="082 123 4567 or +27 82 123 4567" required minLength={10} maxLength={25} pattern="(?:0[1-8][0-9]{8}|\\+27[1-8][0-9]{8})" title="Enter a valid South African number, such as 082 123 4567 or +27 82 123 4567." value={phone} onChange={e=>setPhone(e.target.value)} />
           <fieldset className="choice-fieldset"><legend className="field-label">I want to join as</legend><p className="choice-help">Choose the type of account you want to create.</p><label className={role === "customer" ? "choice-card selected" : "choice-card"}><input type="radio" name="account-role" value="customer" checked={role === "customer"} onChange={() => setRole("customer")} /><span className="choice-card-copy"><strong>Customer</strong><small>I need help with a job.</small></span><span className="choice-indicator" aria-hidden="true" /></label><label className={role === "handyman" ? "choice-card selected" : "choice-card"}><input type="radio" name="account-role" value="handyman" checked={role === "handyman"} onChange={() => setRole("handyman")} /><span className="choice-card-copy"><strong>Handyman</strong><small>I offer home services.</small></span><span className="choice-indicator" aria-hidden="true" /></label></fieldset></>}
-        <label className="field-label" htmlFor="email">Email address</label><input id="email" type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} />
+        <label className="field-label" htmlFor="email">Email address</label><input id="email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={e=>setEmail(e.target.value)} />
         <label className="field-label" htmlFor="password">Password</label>
         <div style={{ position: "relative" }}>
           <input id="password" type={showPassword ? "text" : "password"} autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={8} required value={password} onChange={e=>setPassword(e.target.value)} style={{ width: "100%", paddingRight: "4.5rem" }} />
