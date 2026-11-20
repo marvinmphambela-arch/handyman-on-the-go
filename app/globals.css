@@ -717,3 +717,16 @@ select:disabled { opacity: .65; cursor: not-allowed; }
 .customer-profile-compact .success-note {
   margin: 10px 0 0;
 }
+
+
+/* Match the customer profile action to the app's navy-blue colour scheme. */
+.customer-profile-compact .customer-profile-row .btn-secondary {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+  box-shadow: none;
+}
+.customer-profile-compact .customer-profile-row .btn-secondary:hover:not(:disabled) {
+  background: var(--navy2);
+  border-color: var(--navy2);
+}
