@@ -14,6 +14,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const [role, setRole] = useState<"customer" | "handyman">("customer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   useEffect(() => {
@@ -37,6 +38,10 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           }
         });
         if (authError) throw authError;
+        if (data.user?.identities?.length === 0) {
+          setError("An account with this email address already exists. Please sign in instead.");
+          return;
+        }
         if (data.session) router.push("/account");
         else setMessage("Account created. Check your email for a confirmation link before signing in.");
       } else {
@@ -59,7 +64,13 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           <label className="field-label" htmlFor="phone">Phone number</label><input id="phone" type="tel" autoComplete="tel" placeholder="+27..." required minLength={7} maxLength={25} value={phone} onChange={e=>setPhone(e.target.value)} />
           <fieldset className="choice-fieldset"><legend className="field-label">I want to join as</legend><p className="choice-help">Choose the type of account you want to create.</p><label className={role === "customer" ? "choice-card selected" : "choice-card"}><input type="radio" name="account-role" value="customer" checked={role === "customer"} onChange={() => setRole("customer")} /><span className="choice-card-copy"><strong>Customer</strong><small>I need help with a job.</small></span><span className="choice-indicator" aria-hidden="true" /></label><label className={role === "handyman" ? "choice-card selected" : "choice-card"}><input type="radio" name="account-role" value="handyman" checked={role === "handyman"} onChange={() => setRole("handyman")} /><span className="choice-card-copy"><strong>Handyman</strong><small>I offer home services.</small></span><span className="choice-indicator" aria-hidden="true" /></label></fieldset></>}
         <label className="field-label" htmlFor="email">Email address</label><input id="email" type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} />
-        <label className="field-label" htmlFor="password">Password</label><input id="password" type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={8} required value={password} onChange={e=>setPassword(e.target.value)} />
+        <label className="field-label" htmlFor="password">Password</label>
+        <div style={{ position: "relative" }}>
+          <input id="password" type={showPassword ? "text" : "password"} autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={8} required value={password} onChange={e=>setPassword(e.target.value)} style={{ width: "100%", paddingRight: "4.5rem" }} />
+          <button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", border: 0, background: "transparent", cursor: "pointer", padding: "0.35rem", color: "inherit", fontSize: "0.875rem" }}>
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </div>
         {error && <p className="form-error" role="alert">{error}</p>}{message && <p className="privacy-note" role="status">{message}</p>}
         <button className="btn btn-orange" type="submit" disabled={busy}>{busy ? "Please wait..." : mode === "signup" ? "Create account" : "Sign in"}</button>
         <p className="form-hint">{mode === "signup" ? "Already registered? " : "New to Handyman On The Go? "}<Link href={mode === "signup" ? "/login" : "/signup"}>{mode === "signup" ? "Sign in" : "Create an account"}</Link></p>
