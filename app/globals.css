@@ -719,14 +719,26 @@ select:disabled { opacity: .65; cursor: not-allowed; }
 }
 
 
-/* Customer Edit Profile action uses the app's orange primary-action colour. */
+/* Customer profile action retains its existing navy-blue colour. */
 .customer-profile-compact .customer-profile-row .btn-secondary {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+  box-shadow: none;
+}
+.customer-profile-compact .customer-profile-row .btn-secondary:hover:not(:disabled) {
+  background: var(--navy2);
+  border-color: var(--navy2);
+}
+
+/* Handyman Edit Profile action uses the orange primary-action colour. */
+.handyman-profile-form .customer-profile-row .btn-secondary {
   background: var(--orange);
   color: #172b3b;
   border-color: var(--orange);
   box-shadow: none;
 }
-.customer-profile-compact .customer-profile-row .btn-secondary:hover:not(:disabled) {
+.handyman-profile-form .customer-profile-row .btn-secondary:hover:not(:disabled) {
   background: var(--orange2);
   border-color: var(--orange2);
 }
