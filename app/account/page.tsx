@@ -9,6 +9,7 @@ import FindReplacementHandyman from "@/components/find-replacement-handyman";
 import StatusBadge from "@/components/status-badge";
 import ConfirmJobCompletionButton from "@/components/confirm-job-completion-button";
 import SharedNotificationCenter from "@/components/shared-notification-center";
+import CustomerProfileForm from "./customer-profile-form";
 
 type Offer = {
   id: string;
@@ -51,7 +52,7 @@ export default async function AccountPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, role")
+    .select("full_name, phone, role")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -84,6 +85,7 @@ export default async function AccountPage() {
     </div></header>
     <div className="container request-shell">
       <div className="request-heading"><div className="eyebrow">CUSTOMER DASHBOARD</div><h1>Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}.</h1><p>Compare handyman offers and choose the one that works best for you.</p></div>
+      <CustomerProfileForm fullName={profile?.full_name ?? ""} phone={profile?.phone ?? ""} email={user.email ?? ""} />
       <SharedNotificationCenter role="customer" />
       <div className="section-heading"><div><div className="eyebrow">YOUR HOME SERVICES</div><h2>My job requests</h2></div><Link href="/request" className="btn btn-orange">Post another job</Link></div>
       {error && <section className="request-card"><h2>We couldn't load your requests.</h2><p>Please refresh the page. If this continues, contact support.</p></section>}
