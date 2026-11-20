@@ -29,7 +29,7 @@ export default async function AdminDashboard() {
   const accountManagementError = customerAccountsResult.error || handymanAccountsResult.error;
   const customerAccounts = (customerAccountsResult.data ?? []) as {
     id: string; role: "customer"; full_name: string | null; phone: string | null;
-    created_at: string; account_status: "active" | "suspended"; verification_status: string | null;
+    created_at: string; account_status: "active" | "suspended"; verification_status: string | null; email_verified: boolean;
   }[];
   const handymanAccounts = (handymanAccountsResult.data ?? []) as {
     id: string; role: "handyman"; full_name: string | null; phone: string | null;
