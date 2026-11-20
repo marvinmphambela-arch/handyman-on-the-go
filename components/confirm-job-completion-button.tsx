@@ -7,17 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 type PaymentMethod = "direct_eft" | "platform";
 
 type CompletionResult = {
-  commission_total_zar?: number;
-  commission_wallet_amount_zar?: number;
-  commission_shortfall_zar?: number;
-  commission_carryforward_deducted_zar?: number;
-  commission_amount_zar?: number;
-  net_earnings_zar?: number;
   already_completed?: boolean;
-  commission_status?: string;
 };
-
-const zar = (amount: number) => Number(amount || 0).toLocaleString("en-ZA");
 
 export default function ConfirmJobCompletionButton({ jobId, paymentMethod }: { jobId: string; paymentMethod: PaymentMethod }) {
   const [busy, setBusy] = useState(false);
@@ -56,28 +47,7 @@ export default function ConfirmJobCompletionButton({ jobId, paymentMethod }: { j
 
     const result = (data ?? {}) as CompletionResult;
     if (result.already_completed) {
-      setMessage("This job was already marked completed. No additional commission was charged.");
-      router.refresh();
-      return;
-    }
-
-    const total = Number(result.commission_total_zar ?? 0);
-    const wallet = Number(result.commission_wallet_amount_zar ?? 0);
-    const shortfall = Number(result.commission_shortfall_zar ?? 0);
-    const carryforward = Number(result.commission_carryforward_deducted_zar ?? 0);
-    const earningsDeduction = Number(result.commission_amount_zar ?? 0);
-    const net = Number(result.net_earnings_zar ?? 0);
-
-    if (total === 0) {
-      setMessage("Job completed. No commission was due under the current platform settings.");
-    } else if (method === "direct_eft") {
-      setMessage(
-        `Job completed. Total commission: R${zar(total)}. Access Wallet contribution: R${zar(wallet)}. Direct EFT shortfall carried forward: R${zar(shortfall)}. The customer's direct payment remains R${zar(net)}; the shortfall will be recovered from a future verified Access Wallet top-up or platform-held job earnings, whichever happens first.`
-      );
-    } else {
-      setMessage(
-        `Job completed. Total commission: R${zar(total)}. Access Wallet contribution: R${zar(wallet)}. Deducted from this job's platform-held earnings: R${zar(earningsDeduction)} (including R${zar(carryforward)} from earlier Direct EFT jobs). Net earnings recorded: R${zar(net)}.`
-      );
+      setMessage("This job is already marked as completed.");
     }
     router.refresh();
   }
