@@ -755,3 +755,23 @@ select:disabled { opacity: .65; cursor: not-allowed; }
   background: #194f91;
   border-color: #194f91;
 }
+
+
+/* Selectable customer job photo tiles and full-size viewer */
+.job-photo-section{margin:18px 0 20px;padding:14px;border:1px solid #e8ece9;border-radius:12px;background:#fbfcfb}
+.job-photo-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px;color:var(--navy);font-size:11px;font-weight:750}
+.job-photo-heading>span{display:flex;align-items:center;gap:7px}
+.job-photo-heading small{font-size:10px;color:#849094;font-weight:600}
+.job-photo-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.job-photo-tile{position:relative;display:block;overflow:hidden;aspect-ratio:1;border:1px solid #e1e7e3;border-radius:9px;padding:0;background:#eef1ef;cursor:pointer}
+.job-photo-tile img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .2s ease}
+.job-photo-tile:hover img{transform:scale(1.05)}
+.job-photo-tile>span{position:absolute;right:6px;bottom:6px;padding:4px 7px;border-radius:5px;background:#102b3bd9;color:#fff;font-size:9px;font-weight:700}
+.job-photo-lightbox{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:65px 70px 55px;background:#06131deF}
+.job-photo-expanded{display:block;max-width:min(100%,1000px);max-height:100%;object-fit:contain;border-radius:8px;box-shadow:0 20px 70px #0008}
+.job-photo-close,.job-photo-nav{position:absolute;display:grid;place-items:center;border:1px solid #ffffff55;border-radius:50%;background:#183241;color:#fff;cursor:pointer}
+.job-photo-close{top:20px;right:22px;width:44px;height:44px}
+.job-photo-nav{top:50%;width:46px;height:46px;transform:translateY(-50%)}
+.job-photo-prev{left:18px}.job-photo-next{right:18px}
+.job-photo-counter{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);padding:7px 12px;border-radius:20px;background:#183241;color:#fff;font-size:11px}
+@media(max-width:600px){.job-photo-tiles{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.job-photo-section{padding:11px}.job-photo-lightbox{padding:65px 48px 55px}.job-photo-nav{width:38px;height:38px}.job-photo-prev{left:6px}.job-photo-next{right:6px}.job-photo-close{top:12px;right:12px}}
