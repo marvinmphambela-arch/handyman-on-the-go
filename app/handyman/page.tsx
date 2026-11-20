@@ -37,6 +37,7 @@ type ActiveBooking = {
   city: string;
   urgency: string;
   status: string;
+  payment_method: string | null;
   handyman_en_route_at: string | null;
   created_at: string;
 };
@@ -111,7 +112,7 @@ export default async function HandymanDashboard() {
       .eq("handyman_id", user.id)
       .eq("status", "rejected"),
     supabase.from("jobs")
-      .select("id, title, description, street_address, suburb, city, urgency, status, handyman_en_route_at, created_at")
+      .select("id, title, description, street_address, suburb, city, urgency, status, payment_method, handyman_en_route_at, created_at")
       .in("status", ["confirmed", "in_progress"])
       .order("created_at", { ascending: false }),
     supabase.from("handyman_notifications")
@@ -218,7 +219,7 @@ export default async function HandymanDashboard() {
       {bookings.length === 0 ? <section className="request-card"><p className="privacy-note">No active bookings yet. When a customer accepts your offer, the booking will appear here automatically.</p></section> :
         <div className="job-list">{bookings.map(booking => <article className="request-card" id={`booking-${booking.id}`} key={booking.id}>
           <div className="eyebrow"><StatusBadge status={booking.status} /> · <span className="capitalize">{booking.urgency}</span></div>
-          <h2>{booking.title}</h2><p>{booking.description}</p>
+          <h2>{booking.title}</h2><div className={`payment-method-badge ${booking.payment_method === "platform" ? "payment-method-platform" : "payment-method-direct"}`}><span className="payment-method-icon" aria-hidden="true">{booking.payment_method === "platform" ? "💳" : "🏦"}</span><span>{booking.payment_method === "platform" ? "Platform Payment" : booking.payment_method === "direct_eft" ? "Direct EFT" : "Payment method not recorded"}</span></div><p>{booking.description}</p>
           <div className="review-summary">
             <div className="review-row"><small>EXACT JOB ADDRESS</small><b>{booking.street_address || "The customer has not supplied a street address."}</b></div>
             <div className="review-row"><small>AREA</small><b>{booking.suburb ? booking.suburb + ", " : ""}{booking.city}</b></div>
