@@ -675,3 +675,45 @@ select:disabled { opacity: .65; cursor: not-allowed; }
   margin-top: 1.25rem;
   max-width: 620px;
 }
+
+
+/* Keep the customer profile control visually in proportion with the dashboard. */
+.customer-profile-compact {
+  width: 100%;
+  max-width: 100%;
+  margin: 1rem 0 0;
+  padding: .85rem 0;
+  border-top: 1px solid #e7ebe8;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+.customer-profile-compact .customer-profile-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+.customer-profile-compact .customer-profile-row h2 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: 0;
+  font-weight: 500;
+  color: var(--navy);
+}
+.customer-profile-compact .btn {
+  min-height: 0;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+}
+.customer-profile-compact form {
+  margin-top: 14px;
+  max-width: 100%;
+}
+.customer-profile-compact .success-note {
+  margin: 10px 0 0;
+}
