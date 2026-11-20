@@ -239,6 +239,10 @@ create policy "Handymen can revise their pending or rejected offers"
   );
 
 
+-- Preserve the precise column-level permission used by declined-offer revisions.
+grant update (amount_zar, message, estimated_arrival_minutes, status)
+  on table public.job_offers to authenticated;
+
 -- A suspended customer cannot turn an open job into a new confirmed booking.
 -- Existing confirmed/in-progress booking actions remain unchanged.
 create or replace function public.accept_handyman_offer(p_offer_id uuid)
