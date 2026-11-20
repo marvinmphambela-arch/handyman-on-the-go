@@ -39,8 +39,8 @@ export default function CustomerProfileForm({
       setBusy(false);
       return;
     }
-    const compactPhone = phoneNumber.replace(/[\\s()-]/g, "");
-    if (!/^(?:0[1-8]\\d{8}|\\+27[1-8]\\d{8})$/.test(compactPhone)) {
+    const compactPhone = phoneNumber.replace(/[\s()-]/g, "");
+    if (!/^(?:0[1-8]\d{8}|\+27[1-8]\d{8})$/.test(compactPhone)) {
       setError("Enter a valid South African phone number, for example 082 123 4567 or +27 82 123 4567.");
       setBusy(false);
       return;
