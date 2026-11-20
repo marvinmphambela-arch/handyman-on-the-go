@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import RealtimeRefresh from "@/components/realtime-refresh";
 import AcceptOfferButton from "@/components/accept-offer-button";
+import DeclineOfferButton from "@/components/decline-offer-button";
 import CancelBookingButton from "@/components/cancel-booking-button";
 import FindReplacementHandyman from "@/components/find-replacement-handyman";
 import StatusBadge from "@/components/status-badge";
@@ -124,7 +125,7 @@ export default async function AccountPage() {
                         <div className="review-row"><small>OFFER STATUS</small><b className="capitalize">{offer.status}</b></div>
                         {offer.message && <p>{offer.message}</p>}
                         {offer.status === "accepted" && <p className="success-note">This offer is accepted. Your booking is confirmed.</p>}
-                        {canChoose && offer.status === "pending" && <AcceptOfferButton offerId={offer.id} />}
+                        {canChoose && (offer.status === "pending" || offer.status === "countered") && <div className="offer-decision-actions"><AcceptOfferButton offerId={offer.id} /><DeclineOfferButton offerId={offer.id} /></div>}
                       </div>)}</div>}
                     {job.status === "confirmed" && <><p className="success-note">Your booking is confirmed.</p><div className="review-summary"><div className="review-row"><small>YOUR JOB ADDRESS</small><b>{job.street_address || "No street address was supplied."}</b></div></div><p className="privacy-note">You may cancel before work starts. If the handyman has marked themselves as on the way, a fixed R250 travel compensation will be recorded for them.</p>{job.handyman_en_route_at && <p className="success-note">The handyman marked themselves as on the way at {new Date(job.handyman_en_route_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}.</p>}<CancelBookingButton jobId={job.id} enRoute={Boolean(job.handyman_en_route_at)} /></>}
                     {job.status === "in_progress" && <><p className="success-note">The handyman has marked this job as in progress. You can confirm completion after the work is finished and paid for.</p><ConfirmJobCompletionButton jobId={job.id} /><CancelBookingButton jobId={job.id} enRoute={Boolean(job.handyman_en_route_at)} inProgress /></>}
