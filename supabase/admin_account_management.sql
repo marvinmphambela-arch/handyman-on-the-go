@@ -250,7 +250,7 @@ returns void
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   v_job_id uuid;
   v_customer_id uuid;
@@ -309,7 +309,7 @@ begin
   set status = 'confirmed'
   where id = v_job_id and customer_id = auth.uid() and status = 'open'::public.job_status;
 end;
-$;
+$$;
 
 revoke all on function public.accept_handyman_offer(uuid) from public, anon;
 grant execute on function public.accept_handyman_offer(uuid) to authenticated;
