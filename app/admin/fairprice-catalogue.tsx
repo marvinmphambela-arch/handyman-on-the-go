@@ -12,7 +12,14 @@ type Rate = {
   illustrative: boolean; active: boolean; version: string; updated_at: string;
 };
 
-type RateForm = {\n  id: string; service_category_id: string; region: string;\n  complexity: "simple" | "standard" | "complex";\n  hourly_rate_zar: string; callout_fee_zar: string; travel_fee_zar: string;\n  emergency_multiplier: string; version: string; illustrative: boolean;\n};\n\nconst blank: RateForm = {
+type RateForm = {
+  id: string; service_category_id: string; region: string;
+  complexity: "simple" | "standard" | "complex";
+  hourly_rate_zar: string; callout_fee_zar: string; travel_fee_zar: string;
+  emergency_multiplier: string; version: string; illustrative: boolean;
+};
+
+const blank: RateForm = {
   id: "", service_category_id: "", region: "Gauteng", complexity: "standard" as const,
   hourly_rate_zar: "0", callout_fee_zar: "0", travel_fee_zar: "0",
   emergency_multiplier: "1", version: "draft", illustrative: true
