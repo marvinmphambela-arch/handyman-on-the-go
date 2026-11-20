@@ -18,6 +18,7 @@ type NotificationRow = {
 
 const styles: Record<string, { icon: string; tone: string }> = {
   handyman_offer_received: { icon: "💬", tone: "offer" },
+  new_matching_job: { icon: "🧰", tone: "success" },
   offer_accepted: { icon: "🎉", tone: "success" },
   offer_not_selected: { icon: "↗", tone: "muted" },
   handyman_en_route: { icon: "🚗", tone: "travel" },
@@ -148,11 +149,14 @@ export default function SharedNotificationCenter({ role }: { role: "customer" | 
               <div className="shared-notifications-list">
                 {items.map(item => {
                   const style = styles[item.notification_type] ?? { icon: "🔔", tone: "muted" };
-                  const href = item.job_id
-                    ? role === "customer"
-                      ? `/account#job-${item.job_id}`
-                      : `/handyman?section=bookings#booking-${item.job_id}`
-                    : role === "customer" ? "/account" : "/handyman";
+                  const isNewJob = item.notification_type === "new_matching_job";
+                  const href = isNewJob
+                    ? "/handyman#new-jobs"
+                    : item.job_id
+                      ? role === "customer"
+                        ? `/account#job-${item.job_id}`
+                        : `/handyman?section=bookings#booking-${item.job_id}`
+                      : role === "customer" ? "/account" : "/handyman";
                   return (
                     <article className={`shared-notification-item ${item.read_at ? "is-read" : "is-unread"}`} key={item.id}>
                       <span className={`shared-notification-icon tone-${style.tone}`} aria-hidden="true">{style.icon}</span>
@@ -164,7 +168,7 @@ export default function SharedNotificationCenter({ role }: { role: "customer" | 
                         <p>{item.message}</p>
                         <small>{timeLabel(item.created_at)}</small>
                         <div className="shared-notification-actions">
-                          <Link href={href} onClick={() => { if (!item.read_at) void markAsRead(item.id); }}>View booking</Link>
+                          <Link href={href} onClick={() => { if (!item.read_at) void markAsRead(item.id); }}>{isNewJob ? "View job opportunities" : "View booking"}</Link>
                           {!item.read_at && <button type="button" onClick={() => void markAsRead(item.id)}>Mark as read</button>}
                         </div>
                       </div>
