@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import VerificationActions from "./verification-actions";
 import CancellationReviewActions from "./cancellation-review-actions";
 import AccountManagement from "./account-management";
+import JobsBookingsManagement from "./jobs-bookings-management";
 
 type Submission = {
   handyman_id: string;
@@ -120,6 +121,7 @@ export default async function AdminDashboard() {
       {accountManagementError
         ? <section className="request-card"><h2>Account directory could not be loaded.</h2><p>{accountManagementError.message}</p></section>
         : <AccountManagement customers={customerAccounts} handymen={handymanAccounts} />}
+      <JobsBookingsManagement />
       {cancellationError && <section className="request-card"><h2>Could not load cancellation reviews.</h2><p>{cancellationError.message}</p></section>}
       {!cancellationError && <section className="request-card"><div className="eyebrow">CUSTOMER PROTECTION</div><h2>{cancellationRequests?.length ?? 0} cancellation requests awaiting review</h2><p>Review safety, behaviour, workmanship, and other concerns. Approved requests cancel the booking without automatic travel compensation.</p></section>}
       {(cancellationRequests ?? []).map((item: any) => <article className="request-card" key={item.id}>
