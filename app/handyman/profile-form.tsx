@@ -156,7 +156,7 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
     setBusy(false);
   }
 
-  return <section className="request-card form-step">
+  return <section className="request-card form-step handyman-profile-form">
     <div className="customer-profile-row">
       <h2>Professional details</h2>
       {isEditing
