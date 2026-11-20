@@ -71,7 +71,7 @@ export default function HandymanOfferForm({ jobId }: { jobId: string }) {
       estimated_arrival_minutes: eta
     };
     const result = offer
-      ? await supabase.from("job_offers").update(values).eq("id", offer.id).eq("status", "pending").select("id, amount_zar, message, estimated_arrival_minutes, status").single()
+      ? await supabase.from("job_offers").update({ ...values, ...(offer.status === "rejected" ? { status: "pending" } : {}) }).eq("id", offer.id).eq("status", offer.status).select("id, amount_zar, message, estimated_arrival_minutes, status").single()
       : await supabase.from("job_offers").insert({ job_id: jobId, handyman_id: user.id, ...values, status: "pending" }).select("id, amount_zar, message, estimated_arrival_minutes, status").single();
     if (result.error || !result.data) {
       setError(result.error?.code === "23505"
@@ -81,16 +81,17 @@ export default function HandymanOfferForm({ jobId }: { jobId: string }) {
           : "The offer was not saved. Please refresh and try again.");
     } else {
       setOffer(result.data as Offer);
-      setNotice(offer ? "Your pending offer has been updated." : "Your offer has been sent to the customer.");
+      setNotice(offer?.status === "rejected" ? "Your revised offer has been resubmitted to the customer." : offer ? "Your pending offer has been updated." : "Your offer has been sent to the customer.");
     }
     setSaving(false);
   }
 
   if (loading) return <p className="form-hint">Checking your offer…</p>;
-  if (offer && offer.status !== "pending") return <p className="privacy-note">Your offer is currently {offer.status}. It can no longer be edited here.</p>;
+  if (offer && !["pending", "rejected"].includes(offer.status)) return <p className="privacy-note">Your offer is currently {offer.status}. It can no longer be edited here.</p>;
 
   return <form className="offer-form" onSubmit={submit}>
-    <h3>{offer ? "Update your offer" : "Make an offer"}</h3>
+    <h3>{offer?.status === "rejected" ? "Revise your offer" : offer ? "Update your offer" : "Make an offer"}</h3>
+    {offer?.status === "rejected" && <p className="form-hint">Your previous offer was declined. You can change your price or details and send a revised offer while this job remains open.</p>}
     <p className="form-hint">Access Wallet balance: <strong>R{walletBalance.toLocaleString("en-ZA")}</strong>. You need at least R10 to submit an offer.</p>
     {pendingCommission > 0 && <p className="form-error" role="alert">You have R{pendingCommission.toLocaleString("en-ZA")} in outstanding commission. Top up your Access Wallet to settle it before submitting another offer.</p>}
     {walletBalance < 10 && pendingCommission === 0 && <p className="form-error" role="alert">Your Access Wallet is below R10. Top up your wallet in the Earnings tab before submitting an offer.</p>}
@@ -113,6 +114,6 @@ export default function HandymanOfferForm({ jobId }: { jobId: string }) {
     </select>
     {error && <p className="form-error" role="alert">{error}</p>}
     {notice && <p className="privacy-note" role="status">{notice}</p>}
-    <button className="btn btn-orange" type="submit" disabled={saving || walletBalance < 10 || pendingCommission > 0}>{saving ? "Saving…" : offer ? "Update my offer" : "Send my offer"}</button>
+    <button className="btn btn-orange" type="submit" disabled={saving || walletBalance < 10 || pendingCommission > 0}>{saving ? "Saving…" : offer?.status === "rejected" ? "Resubmit revised offer" : offer ? "Update my offer" : "Send my offer"}</button>
   </form>;
 }
