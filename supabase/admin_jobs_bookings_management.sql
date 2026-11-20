@@ -3,7 +3,10 @@
 
 begin;
 
-create or replace function public.admin_search_jobs_bookings(
+-- The returned table gains payment_method, so replace the function signature safely.
+drop function if exists public.admin_search_jobs_bookings(text, text, integer, integer);
+
+create function public.admin_search_jobs_bookings(
   p_search text default null,
   p_status text default null,
   p_limit integer default 50,
