@@ -21,6 +21,19 @@ export default async function AdminDashboard() {
   const { data: profile } = await supabase.from("profiles").select("role, full_name").eq("id", user.id).maybeSingle();
   if (profile?.role !== "admin") redirect("/account");
 
+  // High-level platform counts. These are read-only aggregate queries.
+  const [customersCount, handymenCount, jobsCount, openJobsCount, activeBookingsCount, completedJobsCount, paidPayments] = await Promise.all([
+    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "customer"),
+    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "handyman"),
+    supabase.from("jobs").select("id", { count: "exact", head: true }),
+    supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "open"),
+    supabase.from("jobs").select("id", { count: "exact", head: true }).in("status", ["confirmed", "in_progress"]),
+    supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "completed"),
+    supabase.from("customer_job_payments").select("amount_zar").eq("status", "paid")
+  ]);
+  const statsError = customersCount.error || handymenCount.error || jobsCount.error || openJobsCount.error || activeBookingsCount.error || completedJobsCount.error || paidPayments.error;
+  const verifiedPaymentsTotal = (paidPayments.data ?? []).reduce((sum, payment) => sum + payment.amount_zar, 0);
+
   const { data, error } = await supabase
     .from("handyman_verification_submissions")
     .select("handyman_id, id_document_path, selfie_path, status, submitted_at, profiles!handyman_verification_submissions_handyman_id_fkey(full_name, phone)")
@@ -50,6 +63,26 @@ export default async function AdminDashboard() {
     </div></header>
     <div className="container request-shell">
       <div className="request-heading"><div className="eyebrow">ADMINISTRATION</div><h1>Administrator dashboard.</h1><p>Review handyman identity submissions and record approval decisions. Verification documents are private and temporary links expire after five minutes.</p></div>
+      <section className="request-card">
+        <div className="eyebrow">PLATFORM OVERVIEW</div>
+        <h2>Marketplace at a glance</h2>
+        {statsError ? <p role="alert">Platform statistics could not be loaded: {statsError.message}</p> : <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(135px, 1fr))", gap: "16px", marginTop: "18px" }}>
+          {[
+            ["Customers", customersCount.count ?? 0],
+            ["Handymen", handymenCount.count ?? 0],
+            ["Jobs posted", jobsCount.count ?? 0],
+            ["Open jobs", openJobsCount.count ?? 0],
+            ["Active bookings", activeBookingsCount.count ?? 0],
+            ["Completed jobs", completedJobsCount.count ?? 0]
+          ].map(([label, value]) => <div key={label} style={{ padding: "14px", border: "1px solid #e7e7e7", borderRadius: "12px" }}>
+            <div className="eyebrow">{label}</div><div style={{ fontSize: "28px", fontWeight: 650 }}>{value}</div>
+          </div>)}
+          <div style={{ padding: "14px", border: "1px solid #e7e7e7", borderRadius: "12px" }}>
+            <div className="eyebrow">Verified customer payments</div><div style={{ fontSize: "28px", fontWeight: 650 }}>R{verifiedPaymentsTotal.toLocaleString("en-ZA")}</div>
+            <p className="form-hint">Successful paid job payments only; not platform revenue.</p>
+          </div>
+        </div>}
+      </section>
       {cancellationError && <section className="request-card"><h2>Could not load cancellation reviews.</h2><p>{cancellationError.message}</p></section>}
       {!cancellationError && <section className="request-card"><div className="eyebrow">CUSTOMER PROTECTION</div><h2>{cancellationRequests?.length ?? 0} cancellation requests awaiting review</h2><p>Review safety, behaviour, workmanship, and other concerns. Approved requests cancel the booking without automatic travel compensation.</p></section>}
       {(cancellationRequests ?? []).map((item: any) => <article className="request-card" key={item.id}>
