@@ -116,7 +116,7 @@ export default async function AdminDashboard() {
     ["jobs-bookings", "Jobs & bookings"]
   ];
 
-  return <main className="request-page" style={{ minHeight: "100vh", background: "#f3f7fc" }}>
+  return <main className="request-page" style={{ minHeight: "100vh", background: "#f7f8fa" }}>
     <header style={{ background: "#082d59", color: "#fff", borderBottom: "4px solid #f58220" }}>
       <div className="container" style={{ minHeight: 78, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18, flexWrap: "wrap", paddingTop: 12, paddingBottom: 12 }}>
         <Link className="brand" href="/" style={{ color: "#fff" }}>
@@ -155,7 +155,7 @@ export default async function AdminDashboard() {
           <p style={{ color: "#62748a", margin: 0 }}>Monitor the marketplace and manage platform operations from one place.</p>
         </div>
 
-        <AdminSection id="overview" eyebrow="01 · PLATFORM" title="Platform Overview" description="Marketplace performance and verified payment totals" accent="#073b78" open>
+        <AdminSection id="overview" eyebrow="01 · PLATFORM" title="Platform Overview" description="Marketplace performance and verified payment totals" accent="#07549a" open>
           {statsError ? <p role="alert">Platform statistics could not be loaded: {statsError.message}</p> : <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(145px, 1fr))", gap: 12 }}>
             {[
               ["Customers", overview?.customers ?? 0, "#e8f2ff", "#0866c6"],
@@ -164,8 +164,7 @@ export default async function AdminDashboard() {
               ["Open jobs", overview?.open_jobs ?? 0, "#edf0ff", "#4b55b7"],
               ["Active bookings", overview?.active_bookings ?? 0, "#e8f2ff", "#0866c6"],
               ["Completed jobs", overview?.completed_jobs ?? 0, "#e8f7ef", "#16834b"],
-              ["Cancelled jobs", overview?.cancelled_jobs ?? 0, "#fff1e5", "#e87516"],
-              ["Other-status jobs", overview?.other_jobs ?? 0, "#f0f3f7", "#52647a"]
+              ["Cancelled & other-status jobs", (overview?.cancelled_jobs ?? 0) + (overview?.other_jobs ?? 0), "#fff1e5", "#e87516"]
             ].map(([label, value, background, color]) => <div key={String(label)} style={{ padding: 16, border: "1px solid #e1eaf4", borderRadius: 13, background: String(background) }}>
               <div style={{ color: "#52647a", fontSize: 11, fontWeight: 750, textTransform: "uppercase", letterSpacing: ".7px" }}>{label}</div>
               <div style={{ color: String(color), fontSize: 27, fontWeight: 800, marginTop: 5 }}>{value}</div>
@@ -178,7 +177,7 @@ export default async function AdminDashboard() {
           </div>}
         </AdminSection>
 
-        <AdminSection id="accounts" eyebrow="02 · PEOPLE" title="Account Management" description="Manage customer and handyman accounts" accent="#0866b8">
+        <AdminSection id="accounts" eyebrow="02 · PEOPLE" title="Account Management" description="Manage customer and handyman accounts" accent="#07549a">
           {accountManagementError
             ? <section className="request-card"><h2>Account directory could not be loaded.</h2><p>{accountManagementError.message}</p></section>
             : <AccountManagement customers={customerAccounts} handymen={handymanAccounts} />}
@@ -188,7 +187,7 @@ export default async function AdminDashboard() {
           <JobsBookingsManagement />
         </AdminSection>
 
-        <AdminSection id="cancellations" eyebrow="04 · CUSTOMER PROTECTION" title="Cancellation Requests" description={`${cancellationRequests?.length ?? 0} request(s) awaiting review`} accent="#ed7818">
+        <AdminSection id="cancellations" eyebrow="04 · CUSTOMER PROTECTION" title="Cancellation Requests" description={`${cancellationRequests?.length ?? 0} request(s) awaiting review`} accent="#07549a">
           {cancellationError && <section className="request-card"><h2>Could not load cancellation reviews.</h2><p>{cancellationError.message}</p></section>}
           {!cancellationError && (cancellationRequests ?? []).length === 0 && <p className="form-hint">There are no cancellation requests awaiting review.</p>}
           {(cancellationRequests ?? []).map((item: any) => <article className="request-card" key={item.id}>
@@ -201,7 +200,7 @@ export default async function AdminDashboard() {
           </article>)}
         </AdminSection>
 
-        <AdminSection id="verification" eyebrow="05 · TRUST & SAFETY" title="Handyman Verification" description={`${pending.length} submission(s) awaiting review · identity documents and selfies`} accent="#16834b">
+        <AdminSection id="verification" eyebrow="05 · TRUST & SAFETY" title="Handyman Verification" description={`${pending.length} submission(s) awaiting review · identity documents and selfies`} accent="#07549a">
           <section className="request-card"><div className="eyebrow">REVIEW QUEUE</div><h2>{pending.length} submission{pending.length === 1 ? "" : "s"} awaiting review</h2><p>Review each identity document and separate selfie carefully before making a decision.</p></section>
           {error && <section className="request-card"><h2>We couldn't load submissions.</h2><p>{error.message}</p></section>}
           {!error && submissions.length === 0 && <section className="request-card completion"><h2>No verification submissions yet.</h2><p>New handyman applications will appear here after they submit their documents.</p></section>}
@@ -224,7 +223,7 @@ export default async function AdminDashboard() {
       </div>
     </div>
     <style>{`
-      .admin-section { background: #fff; border: 1px solid #dce6f2; border-radius: 16px; padding: 8px; box-shadow: 0 8px 24px rgba(8,45,89,.055); }
+      .admin-section { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 8px; box-shadow: 0 4px 16px rgba(20,40,70,.045); }
       .admin-section > summary::-webkit-details-marker { display: none; }
       .admin-section > summary::marker { content: ""; }
       .admin-section[open] > summary { border-radius: 12px 12px 8px 8px !important; }
