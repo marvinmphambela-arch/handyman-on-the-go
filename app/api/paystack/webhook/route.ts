@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
       const { data: payout, error: payoutLookupError } = await admin
         .from("handyman_payout_requests")
-        .select("id, net_amount_zar, status, transfer_reference")
+        .select("id, net_amount_zar, status, transfer_reference, paystack_recipient_code_snapshot")
         .eq("transfer_reference", reference)
         .maybeSingle();
 
@@ -63,7 +63,15 @@ export async function POST(request: Request) {
       }
 
       // Paystack amounts are in the currency subunit. For ZAR that is cents.
-      if (amount !== payout.net_amount_zar * 100) {
+      // Require the event to identify the exact saved recipient as well.
+      const eventRecipientCode = typeof transfer?.recipient === "object"
+        && transfer.recipient !== null
+        ? transfer.recipient.recipient_code
+        : null;
+
+      if (amount !== payout.net_amount_zar * 100
+          || !payout.paystack_recipient_code_snapshot
+          || eventRecipientCode !== payout.paystack_recipient_code_snapshot) {
         console.warn("Paystack transfer webhook ignored: amount did not match payout.", { reference });
         return NextResponse.json({ received: true });
       }
