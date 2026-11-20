@@ -196,7 +196,11 @@ export default async function AdminDashboard() {
             : <AccountManagement customers={customerAccounts} handymen={handymanAccounts} />}
         </AdminSection>
 
-        <AdminSection id="fairprice" eyebrow="03 · TRUST & PRICING" title="FairPrice Catalogue" description="Manage verified service rates and regional pricing guidance" accent="#07549a">\n          <FairPriceCatalogue categories={categoriesResult.data ?? []} initialRates={fairpriceRates} loadError={fairpriceResult.error?.message || categoriesResult.error?.message || undefined} />\n        </AdminSection>\n\n        <AdminSection id="jobs-bookings" eyebrow="04 · MARKETPLACE" title="Jobs & Bookings" description="Search and inspect jobs, accepted handymen, offers and payment records" accent="#07549a">
+        <AdminSection id="fairprice" eyebrow="03 · TRUST & PRICING" title="FairPrice Catalogue" description="Manage verified service rates and regional pricing guidance" accent="#07549a">
+          <FairPriceCatalogue categories={categoriesResult.data ?? []} initialRates={fairpriceRates} loadError={fairpriceResult.error?.message || categoriesResult.error?.message || undefined} />
+        </AdminSection>
+
+        <AdminSection id="jobs-bookings" eyebrow="04 · MARKETPLACE" title="Jobs & Bookings" description="Search and inspect jobs, accepted handymen, offers and payment records" accent="#07549a">
           <JobsBookingsManagement />
         </AdminSection>
 
