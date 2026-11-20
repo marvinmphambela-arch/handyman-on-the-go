@@ -92,6 +92,11 @@ export default async function AdminDashboard() {
             <p className="form-hint">Should equal total jobs posted.</p>
           </div>
           <div style={{ padding: "14px", border: "1px solid #e7e7e7", borderRadius: "12px" }}>
+            <div className="eyebrow">Job status total</div>
+            <div style={{ fontSize: "28px", fontWeight: 650 }}>{(overview?.open_jobs ?? 0) + (overview?.active_bookings ?? 0) + (overview?.completed_jobs ?? 0) + (overview?.cancelled_jobs ?? 0) + (overview?.other_jobs ?? 0)}</div>
+            <p className="form-hint">All job statuses combined; should match jobs posted.</p>
+          </div>
+          <div style={{ padding: "14px", border: "1px solid #e7e7e7", borderRadius: "12px" }}>
             <div className="eyebrow">Verified customer payments</div><div style={{ fontSize: "28px", fontWeight: 650 }}>R{verifiedPaymentsTotal.toLocaleString("en-ZA")}</div>
             <p className="form-hint">Successful paid job payments only; not platform revenue.</p>
           </div>
