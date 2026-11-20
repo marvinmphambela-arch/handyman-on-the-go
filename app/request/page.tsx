@@ -24,7 +24,8 @@ export default function NewRequestPage() {
   const [addressSelected, setAddressSelected] = useState(false);
   const [jobLatitude, setJobLatitude] = useState<number | null>(null);
   const [jobLongitude, setJobLongitude] = useState<number | null>(null);
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [photoUploadWarning, setPhotoUploadWarning] = useState("");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -74,7 +75,24 @@ export default function NewRequestPage() {
 
   function handlePhotos(files: FileList | null) {
     if (!files) return;
-    setPhotos(Array.from(files).slice(0, 4).map((file) => file.name));
+    const selected = Array.from(files);
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (selected.length > 4) {
+      setError("Please choose no more than 4 photos.");
+      return;
+    }
+    const invalidType = selected.find((file) => !allowedTypes.includes(file.type));
+    if (invalidType) {
+      setError("Please choose JPG, PNG or WebP image files only.");
+      return;
+    }
+    const oversized = selected.find((file) => file.size > 10 * 1024 * 1024);
+    if (oversized) {
+      setError("Each photo must be 10 MB or smaller.");
+      return;
+    }
+    setError("");
+    setPhotos(selected);
   }
 
   async function submitRequest() {
@@ -99,7 +117,7 @@ export default function NewRequestPage() {
         return;
       }
 
-      const { error: insertError } = await supabase.from("jobs").insert({
+      const { data: job, error: insertError } = await supabase.from("jobs").insert({
         customer_id: authData.user.id,
         service_category_id: category.id,
         title: title.trim(),
@@ -112,12 +130,42 @@ export default function NewRequestPage() {
         longitude: jobLongitude,
         urgency,
         payment_method: paymentMethod,
-      });
-      if (insertError) {
-        setError(insertError.message.includes("row-level security")
+      }).select("id").single();
+      if (insertError || !job) {
+        setError(insertError?.message.includes("row-level security")
           ? "Your account does not have permission to submit this request. Please make sure you are signed in with a customer account."
           : "We couldn't save your request. Please try again.");
         return;
+      }
+
+      if (photos.length > 0) {
+        const uploadedPaths: string[] = [];
+        try {
+          for (const file of photos) {
+            const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+            const safeExtension = ["jpg", "jpeg", "png", "webp"].includes(extension) ? extension : "jpg";
+            const storagePath = `${job.id}/${crypto.randomUUID()}.${safeExtension}`;
+            const { error: uploadError } = await supabase.storage
+              .from("job-photos")
+              .upload(storagePath, file, { contentType: file.type, upsert: false });
+            if (uploadError) throw uploadError;
+            uploadedPaths.push(storagePath);
+          }
+
+          const { error: metadataError } = await supabase.from("job_photos").insert(
+            uploadedPaths.map((storage_path) => ({
+              job_id: job.id,
+              uploaded_by: authData.user.id,
+              storage_path,
+            }))
+          );
+          if (metadataError) throw metadataError;
+        } catch {
+          if (uploadedPaths.length > 0) {
+            await supabase.storage.from("job-photos").remove(uploadedPaths);
+          }
+          setPhotoUploadWarning("Your job request was saved, but the photos could not be uploaded. You can still continue to your account; please contact support if you need the photos attached.");
+        }
       }
       setSaved(true);
     } catch {
@@ -132,14 +180,14 @@ export default function NewRequestPage() {
     <div className="container request-shell">
       <div className="request-heading"><div className="eyebrow">CUSTOMER REQUEST</div><h1>Tell us what needs fixing.</h1><p>Share a few details so nearby professionals can understand the job and make you an offer.</p></div>
       {!saved && <div className="progress-track">{steps.map((label, index) => <div className={index <= step ? "progress-step active" : "progress-step"} key={label}><span>{index < step ? <Check size={14}/> : index + 1}</span><small>{label}</small></div>)}</div>}
-      {saved ? <section className="request-card completion"><CheckCircle2 size={42}/><h2>Your request has been saved.</h2><p>Your job request is now securely stored in your account. Your request is saved with map coordinates for distance matching. Nearby-job matching is being connected and no handyman has been notified yet.</p><div className="review-summary"><b>{title}</b><span>{service} · {urgency}</span><span>{suburb}, {city}</span></div><Link href="/account" className="btn btn-dark">Go to my account</Link></section> :
+      {saved ? <section className="request-card completion"><CheckCircle2 size={42}/><h2>Your request has been saved.</h2><p>Your job request is now securely stored in your account. Your request is saved with map coordinates for distance matching. Nearby-job matching is being connected and no handyman has been notified yet.</p>{photoUploadWarning && <div className="form-error" role="alert">{photoUploadWarning}</div>}<div className="review-summary"><b>{title}</b><span>{service} · {urgency}</span><span>{suburb}, {city}</span></div><Link href="/account" className="btn btn-dark">Go to my account</Link></section> :
       <section className="request-card">
         {step === 0 && <div className="form-step"><div className="step-kicker">STEP 1 OF 3</div><h2>What kind of help do you need?</h2><p className="form-hint">Choose the closest service and describe the work.</p>
           <label className="field-label" htmlFor="service">Service category</label><div className="category-pills">{categories.map((item) => <button type="button" key={item} onClick={() => setService(item)} className={service === item ? "category-pill selected" : "category-pill"}>{item}</button>)}</div>
           <label className="field-label" htmlFor="job-title">Give your job a short title</label><input id="job-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Leaking kitchen tap" maxLength={90}/>
           <label className="field-label" htmlFor="description">Describe what needs to be done</label><textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Tell the handyman what happened, what needs fixing and any useful details..." rows={5} maxLength={1200}/><div className="field-meta">{description.length}/1200 characters</div>
           <label className="field-label">How urgent is it?</label><div className="urgency-options">{[["standard","Standard","Schedule at a suitable time"],["urgent","Urgent","As soon as possible"],["emergency","Emergency","Needs immediate attention"]].map(([value,label,detail])=><button type="button" key={value} onClick={() => setUrgency(value)} className={urgency === value ? "urgency-option selected" : "urgency-option"}><b>{label}</b><small>{detail}</small></button>)}</div>
-          <label className="field-label" htmlFor="photos">Add photos (optional, up to 4)</label><label className="upload-box" htmlFor="photos"><Paperclip size={18}/><span>Choose photos from your device</span><small>Photo uploads are not available yet; only file names are shown here.</small></label><input className="visually-hidden" id="photos" type="file" accept="image/*" multiple onChange={(e) => handlePhotos(e.target.files)}/>{photos.length > 0 && <p className="file-list">{photos.join(" · ")}</p>}
+          <label className="field-label" htmlFor="photos">Add photos (optional, up to 4)</label><label className="upload-box" htmlFor="photos"><Paperclip size={18}/><span>Choose photos from your device</span><small>JPG, PNG or WebP · Up to 4 photos · 10 MB maximum each</small></label><input className="visually-hidden" id="photos" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" multiple onChange={(e) => handlePhotos(e.target.files)}/>{photos.length > 0 && <p className="file-list">{photos.map((file) => file.name).join(" · ")}</p>}
         </div>}
         {step === 1 && <div className="form-step"><div className="step-kicker">STEP 2 OF 3</div><h2>Where is the job?</h2><p className="form-hint">Enter the location where the work is needed.</p>
           <div className="location-note"><MapPin size={19}/><span><b>Gauteng launch area</b><small>For now, enter the job location manually.</small></span></div>
@@ -153,7 +201,7 @@ export default function NewRequestPage() {
           <div className="privacy-note">Your exact address is private. The app saves map coordinates separately so it can calculate which handymen are within range.</div>
         </div>}
         {step === 2 && <div className="form-step"><div className="step-kicker">STEP 3 OF 3</div><h2>Review your request.</h2><p className="form-hint">Check the details before saving your request.</p>
-          <div className="review-summary"><div className="review-row"><small>SERVICE</small><b>{service}</b></div><div className="review-row"><small>JOB</small><b>{title}</b><p>{description}</p></div><div className="review-row"><small>URGENCY</small><b className="capitalize">{urgency}</b></div><div className="review-row"><small>LOCATION</small><b>{suburb}, {city}</b><p>{address}</p></div><div className="review-row"><small>PHOTOS</small><b>{photos.length ? photos.join(", ") : "No photos added"}</b></div></div>
+          <div className="review-summary"><div className="review-row"><small>SERVICE</small><b>{service}</b></div><div className="review-row"><small>JOB</small><b>{title}</b><p>{description}</p></div><div className="review-row"><small>URGENCY</small><b className="capitalize">{urgency}</b></div><div className="review-row"><small>LOCATION</small><b>{suburb}, {city}</b><p>{address}</p></div><div className="review-row"><small>PHOTOS</small><b>{photos.length ? photos.map((file) => file.name).join(", ") : "No photos added"}</b></div></div>
           <div className="payment-choice">
             <h3>How would you like to pay?</h3>
             <p className="form-hint">Choose your payment method now. Handymen will see your choice before they make an offer.</p>
