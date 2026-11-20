@@ -47,6 +47,7 @@ export default function SharedNotificationCenter({ role }: { role: "customer" | 
       .from("notifications")
       .select("id, recipient_role, job_id, notification_type, title, message, read_at, created_at")
       .eq("recipient_role", role)
+      .is("read_at", null)
       .order("created_at", { ascending: false })
       .limit(30);
 
@@ -103,7 +104,7 @@ export default function SharedNotificationCenter({ role }: { role: "customer" | 
       setError("We couldn't mark that notification as read. Please try again.");
       return;
     }
-    setItems(current => current.map(item => item.id === id ? { ...item, read_at: now } : item));
+    setItems(current => current.filter(item => item.id !== id));
   }
 
   async function markAllAsRead() {
@@ -117,7 +118,7 @@ export default function SharedNotificationCenter({ role }: { role: "customer" | 
       setError("We couldn't mark notifications as read. Please try again.");
       return;
     }
-    setItems(current => current.map(item => item.read_at ? item : { ...item, read_at: now }));
+    setItems([]);
   }
 
   return (
