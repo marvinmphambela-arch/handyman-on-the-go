@@ -12,6 +12,7 @@ type ManagedAccount = {
   created_at: string;
   account_status: "active" | "suspended";
   verification_status: string | null;
+  email_verified: boolean;
 };
 
 export default function AccountManagement({ customers, handymen }: {
@@ -85,6 +86,7 @@ export default function AccountManagement({ customers, handymen }: {
             <h3 style={{ margin: 0 }}>{account.full_name || (tab === "customers" ? "Customer" : "Handyman")}</h3>
             <p style={{ margin: "5px 0" }}>{account.phone || "No phone number supplied"}</p>
             <p className="form-hint">Registered {new Date(account.created_at).toLocaleDateString("en-ZA", { dateStyle: "medium" })}</p>
+            <p className="form-hint">Email verification: {account.email_verified ? "Verified" : "Not verified"}</p>
             {tab === "handymen" && <p className="form-hint">Identity verification: {(account.verification_status || "pending").replaceAll("_", " ")}</p>}
           </div>
           <div style={{ textAlign: "right" }}>
