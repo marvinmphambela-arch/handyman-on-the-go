@@ -34,6 +34,8 @@ export default async function AdminDashboard() {
     open_jobs: number;
     active_bookings: number;
     completed_jobs: number;
+    cancelled_jobs: number;
+    other_jobs: number;
   } | null;
   const verifiedPaymentsTotal = (paidPayments.data ?? []).reduce((sum, payment) => sum + payment.amount_zar, 0);
 
@@ -76,10 +78,19 @@ export default async function AdminDashboard() {
             ["Jobs posted", overview?.jobs_posted ?? 0],
             ["Open jobs", overview?.open_jobs ?? 0],
             ["Active bookings", overview?.active_bookings ?? 0],
-            ["Completed jobs", overview?.completed_jobs ?? 0]
+            ["Completed jobs", overview?.completed_jobs ?? 0],
+            ["Cancelled jobs", overview?.cancelled_jobs ?? 0],
+            ["Other-status jobs", overview?.other_jobs ?? 0]
           ].map(([label, value]) => <div key={label} style={{ padding: "14px", border: "1px solid #e7e7e7", borderRadius: "12px" }}>
             <div className="eyebrow">{label}</div><div style={{ fontSize: "28px", fontWeight: 650 }}>{value}</div>
           </div>)}
+          <div style={{ padding: "14px", border: "1px solid #e7e7e7", borderRadius: "12px" }}>
+            <div className="eyebrow">Jobs accounted for</div>
+            <div style={{ fontSize: "28px", fontWeight: 650 }}>
+              {(overview?.open_jobs ?? 0) + (overview?.active_bookings ?? 0) + (overview?.completed_jobs ?? 0) + (overview?.cancelled_jobs ?? 0) + (overview?.other_jobs ?? 0)}
+            </div>
+            <p className="form-hint">Should equal total jobs posted.</p>
+          </div>
           <div style={{ padding: "14px", border: "1px solid #e7e7e7", borderRadius: "12px" }}>
             <div className="eyebrow">Verified customer payments</div><div style={{ fontSize: "28px", fontWeight: 650 }}>R{verifiedPaymentsTotal.toLocaleString("en-ZA")}</div>
             <p className="form-hint">Successful paid job payments only; not platform revenue.</p>
