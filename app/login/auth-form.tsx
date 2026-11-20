@@ -10,6 +10,7 @@ type Mode = "login" | "signup";
 export default function AuthForm({ mode }: { mode: Mode }) {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [role, setRole] = useState<"customer" | "handyman">("customer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +33,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           email, password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth/callback`,
-            data: { full_name: fullName.trim(), role }
+            data: { full_name: fullName.trim(), phone: phone.trim(), role }
           }
         });
         if (authError) throw authError;
@@ -55,6 +56,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     <div className="container request-shell"><div className="request-heading"><div className="eyebrow">YOUR HANDYMAN ON THE GO ACCOUNT</div><h1>{mode === "signup" ? "Join the community." : "Welcome back."}</h1><p>{mode === "signup" ? "Create an account to get started as a customer or handyman." : "Sign in to continue to your account."}</p></div>
       <form className="request-card form-step" onSubmit={submit}>
         {mode === "signup" && <><label className="field-label" htmlFor="full-name">Full name</label><input id="full-name" autoComplete="name" required value={fullName} onChange={e=>setFullName(e.target.value)} maxLength={100} />
+          <label className="field-label" htmlFor="phone">Phone number</label><input id="phone" type="tel" autoComplete="tel" placeholder="+27..." required minLength={7} maxLength={25} value={phone} onChange={e=>setPhone(e.target.value)} />
           <fieldset className="choice-fieldset"><legend className="field-label">I want to join as</legend><p className="choice-help">Choose the type of account you want to create.</p><label className={role === "customer" ? "choice-card selected" : "choice-card"}><input type="radio" name="account-role" value="customer" checked={role === "customer"} onChange={() => setRole("customer")} /><span className="choice-card-copy"><strong>Customer</strong><small>I need help with a job.</small></span><span className="choice-indicator" aria-hidden="true" /></label><label className={role === "handyman" ? "choice-card selected" : "choice-card"}><input type="radio" name="account-role" value="handyman" checked={role === "handyman"} onChange={() => setRole("handyman")} /><span className="choice-card-copy"><strong>Handyman</strong><small>I offer home services.</small></span><span className="choice-indicator" aria-hidden="true" /></label></fieldset></>}
         <label className="field-label" htmlFor="email">Email address</label><input id="email" type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} />
         <label className="field-label" htmlFor="password">Password</label><input id="password" type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={8} required value={password} onChange={e=>setPassword(e.target.value)} />
