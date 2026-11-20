@@ -63,7 +63,7 @@ export default async function AccountPage() {
 
   const { data, error } = await supabase
     .from("jobs")
-    .select("id, title, description, suburb, street_address, city, urgency, status, payment_method, handyman_en_route_at, cancellation_compensation_zar, replacement_handyman_decision, created_at, service_categories(name), job_offers(id, amount_zar, message, estimated_arrival_minutes, status, created_at)")
+    .select("id, title, description, suburb, street_address, city, urgency, status, payment_method, handyman_en_route_at, cancellation_reason, cancellation_compensation_zar, replacement_handyman_decision, created_at, service_categories(name), job_offers(id, amount_zar, message, estimated_arrival_minutes, status, created_at)")
     .eq("customer_id", user.id)
     .order("created_at", { ascending: false });
 
