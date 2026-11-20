@@ -131,9 +131,7 @@ export default async function HandymanDashboard() {
         .order("created_at", { ascending: false })
     : { data: [] as DashboardJob[] };
   const rejectedJobs = (rejectedJobsResult.data ?? []) as DashboardJob[];
-  const rejectedJobIdSet = new Set(rejectedJobIds);
-  const opportunities = ((opportunitiesResult.data ?? []) as DashboardJob[])
-    .filter(job => !rejectedJobIdSet.has(job.id));
+  const opportunities = (opportunitiesResult.data ?? []) as DashboardJob[];
   const bookings = (bookingsResult.data ?? []) as ActiveBooking[];
   const notifications = (notificationsResult.data ?? []) as HandymanNotification[];
   const accessWalletBalance = walletResult.data?.balance_zar ?? 0;
@@ -211,7 +209,7 @@ export default async function HandymanDashboard() {
             <div className="eyebrow"><StatusBadge status="rejected" /> · {category ?? "Home service"}</div>
             <h3>{job.title}</h3><p>{job.description}</p>
             <p className="form-hint">{job.suburb ? job.suburb + ", " : ""}{job.city}</p>
-            <p className="privacy-note">You previously declined this job. It is shown here for reference only and is not available for a new offer.</p>
+            <p className="privacy-note">Your previous offer was declined. If the job is still open, it also appears under New opportunities, where you can revise and resubmit your offer.</p>
           </article>;
         })}</div>}
         </>}
