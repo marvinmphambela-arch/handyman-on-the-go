@@ -108,6 +108,7 @@ declare
   v_request public.handyman_payout_requests%rowtype;
   v_link record;
   v_earning public.handyman_earnings%rowtype;
+  v_allocated bigint;
 begin
   if p_transfer_status not in ('success', 'failed', 'reversed') then
     raise exception 'Transfer status is not conclusive.';
@@ -134,6 +135,16 @@ begin
 
   if v_request.status <> 'processing' then
     raise exception 'Payout request is not in processing state.';
+  end if;
+
+  -- Never settle a payout unless its allocation ledger exactly covers gross.
+  select coalesce(sum(amount_zar), 0)
+    into v_allocated
+  from public.handyman_payout_request_earnings
+  where payout_request_id = v_request.id;
+
+  if v_allocated <> v_request.gross_amount_zar then
+    raise exception 'Payout allocation total does not match the requested gross amount; manual reconciliation is required.';
   end if;
 
   for v_link in
