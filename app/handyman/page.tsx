@@ -24,6 +24,7 @@ type DashboardJob = {
   payment_method: string | null;
   created_at: string;
   service_categories: { name: string } | { name: string }[] | null;
+  photoUrls?: string[];
 };
 
 type ActiveBooking = {
@@ -133,6 +134,26 @@ export default async function HandymanDashboard() {
     : { data: [] as DashboardJob[] };
   const rejectedJobs = (rejectedJobsResult.data ?? []) as DashboardJob[];
   const opportunities = (opportunitiesResult.data ?? []) as DashboardJob[];
+  const opportunityIds = opportunities.map(job => job.id);
+  const photoUrlsByJob = new Map<string, string[]>();
+  if (opportunityIds.length > 0) {
+    const { data: photoRecords } = await supabase
+      .from("job_photos")
+      .select("job_id, storage_path")
+      .in("job_id", opportunityIds)
+      .order("created_at", { ascending: true });
+    for (const photo of photoRecords ?? []) {
+      const { data: signedPhoto } = await supabase.storage
+        .from("job-photos")
+        .createSignedUrl(photo.storage_path, 60 * 60);
+      if (signedPhoto?.signedUrl) {
+        photoUrlsByJob.set(photo.job_id, [...(photoUrlsByJob.get(photo.job_id) ?? []), signedPhoto.signedUrl]);
+      }
+    }
+  }
+  for (const job of opportunities) {
+    job.photoUrls = photoUrlsByJob.get(job.id) ?? [];
+  }
   const bookings = (bookingsResult.data ?? []) as ActiveBooking[];
   const notifications = (notificationsResult.data ?? []) as HandymanNotification[];
   const accessWalletBalance = walletResult.data?.balance_zar ?? 0;
@@ -184,6 +205,7 @@ export default async function HandymanDashboard() {
           <div className="eyebrow">{category ?? "Home service"} · <span className="capitalize">{job.urgency}</span></div>
           <h3>{job.title}</h3>
           <div className={`payment-method-badge ${job.payment_method === "platform" ? "payment-method-platform" : "payment-method-direct"}`}><span className="payment-method-icon" aria-hidden="true">{job.payment_method === "platform" ? "💳" : "🏦"}</span><span>{job.payment_method === "platform" ? "Platform Payment" : "Direct EFT"}</span></div><p>{job.description}</p>
+          {job.photoUrls && job.photoUrls.length > 0 && <div className="job-photo-gallery" aria-label="Customer job photos">{job.photoUrls.map((photoUrl, index) => <a href={photoUrl} target="_blank" rel="noreferrer" key={photoUrl}><img src={photoUrl} alt={`Customer job photo ${index + 1}`} loading="lazy" /></a>)}</div>}
           <p className="form-hint">{job.suburb ? job.suburb + ", " : ""}{job.city}</p>
           <p className="privacy-note">Customer contact details and exact street address are hidden to protect privacy.</p>
           <HandymanOfferForm jobId={job.id} />
