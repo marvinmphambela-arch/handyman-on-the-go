@@ -49,6 +49,7 @@ export default async function AccountPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const emailVerified = Boolean(user.email_confirmed_at);
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -84,7 +85,7 @@ export default async function AccountPage() {
       <Link href="/request" className="btn btn-orange">Post a job</Link>
     </div></header>
     <div className="container request-shell">
-      <div className="request-heading"><div className="eyebrow">CUSTOMER DASHBOARD</div><h1>Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}.</h1><p>Compare handyman offers and choose the one that works best for you.</p></div>
+      <div className="request-heading"><div className="eyebrow">CUSTOMER DASHBOARD</div><h1>Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}.</h1><p>Compare handyman offers and choose the one that works best for you.</p><p className="form-hint">Email verification: <strong>{emailVerified ? "Verified" : "Not verified"}</strong></p></div>
       <SharedNotificationCenter role="customer" />
       <div className="section-heading"><div><div className="eyebrow">YOUR HOME SERVICES</div><h2>My job requests</h2></div><Link href="/request" className="btn btn-orange">Post another job</Link></div>
       {error && <section className="request-card"><h2>We couldn't load your requests.</h2><p>Please refresh the page. If this continues, contact support.</p></section>}
