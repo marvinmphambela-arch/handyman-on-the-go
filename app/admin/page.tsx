@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import VerificationActions from "./verification-actions";
 import CancellationReviewActions from "./cancellation-review-actions";
+import AccountManagement from "./account-management";
 
 type Submission = {
   handyman_id: string;
@@ -20,6 +21,20 @@ export default async function AdminDashboard() {
 
   const { data: profile } = await supabase.from("profiles").select("role, full_name").eq("id", user.id).maybeSingle();
   if (profile?.role !== "admin") redirect("/account");
+
+  const [customerAccountsResult, handymanAccountsResult] = await Promise.all([
+    supabase.rpc("admin_list_managed_accounts", { p_role: "customer" }),
+    supabase.rpc("admin_list_managed_accounts", { p_role: "handyman" })
+  ]);
+  const accountManagementError = customerAccountsResult.error || handymanAccountsResult.error;
+  const customerAccounts = (customerAccountsResult.data ?? []) as {
+    id: string; role: "customer"; full_name: string | null; phone: string | null;
+    created_at: string; account_status: "active" | "suspended"; verification_status: string | null;
+  }[];
+  const handymanAccounts = (handymanAccountsResult.data ?? []) as {
+    id: string; role: "handyman"; full_name: string | null; phone: string | null;
+    created_at: string; account_status: "active" | "suspended"; verification_status: string | null;
+  }[];
 
   // Aggregate counts are returned by an admin-only SECURITY DEFINER RPC.
   const [overviewResult, paidPayments] = await Promise.all([
@@ -102,6 +117,9 @@ export default async function AdminDashboard() {
           </div>
         </div>}
       </section>
+      {accountManagementError
+        ? <section className="request-card"><h2>Account directory could not be loaded.</h2><p>{accountManagementError.message}</p></section>
+        : <AccountManagement customers={customerAccounts} handymen={handymanAccounts} />}
       {cancellationError && <section className="request-card"><h2>Could not load cancellation reviews.</h2><p>{cancellationError.message}</p></section>}
       {!cancellationError && <section className="request-card"><div className="eyebrow">CUSTOMER PROTECTION</div><h2>{cancellationRequests?.length ?? 0} cancellation requests awaiting review</h2><p>Review safety, behaviour, workmanship, and other concerns. Approved requests cancel the booking without automatic travel compensation.</p></section>}
       {(cancellationRequests ?? []).map((item: any) => <article className="request-card" key={item.id}>
