@@ -17,7 +17,9 @@ export async function GET(request: Request) {
           ? "https://handyman-on-the-go.onrender.com"
           : origin;
 
-      return NextResponse.redirect(new URL("/account", appUrl));
+      const requestedPath = searchParams.get("next");
+      const safePath = requestedPath?.startsWith("/") && !requestedPath.startsWith("//") ? requestedPath : "/account";
+      return NextResponse.redirect(new URL(safePath, appUrl));
     }
   }
 
