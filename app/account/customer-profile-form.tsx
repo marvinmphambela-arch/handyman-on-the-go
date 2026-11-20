@@ -16,6 +16,7 @@ export default function CustomerProfileForm({
   const router = useRouter();
   const [fullName, setFullName] = useState(initialName);
   const [phone, setPhone] = useState(initialPhone);
+  const [isEditing, setIsEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -60,17 +61,31 @@ export default function CustomerProfileForm({
     if (saveError) {
       setError("We couldn't save your details. Please try again.");
     } else {
-      setMessage("Your personal information has been updated.");
+      setMessage("Your profile has been updated successfully.");
+      setIsEditing(false);
       router.refresh();
     }
     setBusy(false);
   }
 
   return <section className="request-card form-step customer-profile-card">
-    <div className="eyebrow">YOUR ACCOUNT</div>
-    <h2>My Personal Information</h2>
-    <p className="privacy-note">Keep your contact details up to date so we can assist with your bookings.</p>
-    <form onSubmit={save}>
+    <div className="eyebrow">YOUR PROFILE</div>
+    <div className="section-heading">
+      <div>
+        <h2>Your Profile</h2>
+        <p className="privacy-note">Manage your personal and contact information.</p>
+      </div>
+      <button
+        className="btn btn-secondary"
+        type="button"
+        onClick={() => { setIsEditing(current => !current); setError(""); }}
+        aria-expanded={isEditing}
+      >
+        {isEditing ? "Close" : "Edit Profile"}
+      </button>
+    </div>
+    {message && <p className="success-note" role="status">{message}</p>}
+    {isEditing && <form onSubmit={save}>
       <label className="field-label" htmlFor="customer-profile-name">Full name</label>
       <input id="customer-profile-name" type="text" autoComplete="name" required maxLength={100} value={fullName} onChange={event => setFullName(event.target.value)} />
       <label className="field-label" htmlFor="customer-profile-phone">Phone number</label>
@@ -79,8 +94,7 @@ export default function CustomerProfileForm({
       <input id="customer-profile-email" type="email" value={email} readOnly aria-readonly="true" />
       <p className="form-hint">Your email address is used to sign in and cannot be changed here.</p>
       {error && <p className="form-error" role="alert">{error}</p>}
-      {message && <p className="success-note" role="status">{message}</p>}
       <button className="btn btn-orange" type="submit" disabled={busy}>{busy ? "Saving..." : "Save Changes"}</button>
-    </form>
+    </form>}
   </section>;
 }
