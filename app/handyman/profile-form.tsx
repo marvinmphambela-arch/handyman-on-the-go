@@ -57,7 +57,30 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
+  function validateRequiredFields() {
+    if (!fullName.trim()) return "Please enter your full name.";
+    if (services.length === 0) return "Please choose at least one service.";
+    if (areas.length === 0) return "Please choose at least one service area.";
+    const years = Number(experience);
+    if (experience.trim() === "" || !Number.isInteger(years) || years < 0 || years > 60) {
+      return "Please enter experience from 0 to 60 years.";
+    }
+    if (phone.trim()) {
+      const compactPhone = phone.trim().replace(/[\\s()-]/g, "");
+      if (!/^(?:0[1-8]\\d{8}|\\+27[1-8]\\d{8})$/.test(compactPhone)) {
+        return "Enter a valid South African phone number, for example 082 123 4567 or +27 82 123 4567.";
+      }
+    }
+    return "";
+  }
+
   function closeWithoutSaving() {
+    const validationError = validateRequiredFields();
+    if (validationError) {
+      setError(validationError);
+      setMessage("");
+      return;
+    }
     setFullName(profile?.full_name ?? "");
     setPhone(profile?.phone ?? "");
     setServices(profile?.services ?? []);
@@ -82,21 +105,13 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true); setError(""); setMessage("");
+    const validationError = validateRequiredFields();
+    if (validationError) {
+      setError(validationError);
+      setBusy(false);
+      return;
+    }
     const years = Number(experience);
-    if (!Number.isInteger(years) || years < 0 || years > 60) {
-      setError("Please enter experience from 0 to 60 years."); setBusy(false); return;
-    }
-    if (phone.trim()) {
-      const compactPhone = phone.trim().replace(/[\\s()-]/g, "");
-      if (!/^(?:0[1-8]\\d{8}|\\+27[1-8]\\d{8})$/.test(compactPhone)) {
-        setError("Enter a valid South African phone number, for example 082 123 4567 or +27 82 123 4567.");
-        setBusy(false);
-        return;
-      }
-    }
-    if (services.length === 0) {
-      setError("Please choose at least one service."); setBusy(false); return;
-    }
 
     let latitude: number | null = null;
     let longitude: number | null = null;
