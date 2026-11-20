@@ -21,17 +21,20 @@ export default async function AdminDashboard() {
   const { data: profile } = await supabase.from("profiles").select("role, full_name").eq("id", user.id).maybeSingle();
   if (profile?.role !== "admin") redirect("/account");
 
-  // High-level platform counts. These are read-only aggregate queries.
-  const [customersCount, handymenCount, jobsCount, openJobsCount, activeBookingsCount, completedJobsCount, paidPayments] = await Promise.all([
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "customer"),
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "handyman"),
-    supabase.from("jobs").select("id", { count: "exact", head: true }),
-    supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "open"),
-    supabase.from("jobs").select("id", { count: "exact", head: true }).in("status", ["confirmed", "in_progress"]),
-    supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "completed"),
+  // Aggregate counts are returned by an admin-only SECURITY DEFINER RPC.
+  const [overviewResult, paidPayments] = await Promise.all([
+    supabase.rpc("get_admin_platform_overview"),
     supabase.from("customer_job_payments").select("amount_zar").eq("status", "paid")
   ]);
-  const statsError = customersCount.error || handymenCount.error || jobsCount.error || openJobsCount.error || activeBookingsCount.error || completedJobsCount.error || paidPayments.error;
+  const statsError = overviewResult.error || paidPayments.error;
+  const overview = overviewResult.data as {
+    customers: number;
+    handymen: number;
+    jobs_posted: number;
+    open_jobs: number;
+    active_bookings: number;
+    completed_jobs: number;
+  } | null;
   const verifiedPaymentsTotal = (paidPayments.data ?? []).reduce((sum, payment) => sum + payment.amount_zar, 0);
 
   const { data, error } = await supabase
@@ -68,12 +71,12 @@ export default async function AdminDashboard() {
         <h2>Marketplace at a glance</h2>
         {statsError ? <p role="alert">Platform statistics could not be loaded: {statsError.message}</p> : <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(135px, 1fr))", gap: "16px", marginTop: "18px" }}>
           {[
-            ["Customers", customersCount.count ?? 0],
-            ["Handymen", handymenCount.count ?? 0],
-            ["Jobs posted", jobsCount.count ?? 0],
-            ["Open jobs", openJobsCount.count ?? 0],
-            ["Active bookings", activeBookingsCount.count ?? 0],
-            ["Completed jobs", completedJobsCount.count ?? 0]
+            ["Customers", overview?.customers ?? 0],
+            ["Handymen", overview?.handymen ?? 0],
+            ["Jobs posted", overview?.jobs_posted ?? 0],
+            ["Open jobs", overview?.open_jobs ?? 0],
+            ["Active bookings", overview?.active_bookings ?? 0],
+            ["Completed jobs", overview?.completed_jobs ?? 0]
           ].map(([label, value]) => <div key={label} style={{ padding: "14px", border: "1px solid #e7e7e7", borderRadius: "12px" }}>
             <div className="eyebrow">{label}</div><div style={{ fontSize: "28px", fontWeight: 650 }}>{value}</div>
           </div>)}
