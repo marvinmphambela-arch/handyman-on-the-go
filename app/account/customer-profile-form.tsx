@@ -21,30 +21,45 @@ export default function CustomerProfileForm({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  function validateRequiredFields() {
+    const name = fullName.trim();
+    const phoneNumber = phone.trim();
+    if (!name) return "Please enter your full name.";
+    if (!phoneNumber) return "A phone number is required.";
+    const compactPhone = phoneNumber.replace(/[\\s()-]/g, "");
+    if (!/^(?:0[1-8]\\d{8}|\\+27[1-8]\\d{8})$/.test(compactPhone)) {
+      return "Enter a valid South African phone number, for example 082 123 4567 or +27 82 123 4567.";
+    }
+    return "";
+  }
+
+  function closeEditing() {
+    const validationError = validateRequiredFields();
+    if (validationError) {
+      setError(validationError);
+      setMessage("");
+      return;
+    }
+    setFullName(initialName);
+    setPhone(initialPhone);
+    setError("");
+    setIsEditing(false);
+  }
+
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setMessage("");
     setError("");
 
+    const validationError = validateRequiredFields();
+    if (validationError) {
+      setError(validationError);
+      setBusy(false);
+      return;
+    }
     const name = fullName.trim();
     const phoneNumber = phone.trim();
-    if (!name) {
-      setError("Please enter your full name.");
-      setBusy(false);
-      return;
-    }
-    if (!phoneNumber) {
-      setError("A phone number is required.");
-      setBusy(false);
-      return;
-    }
-    const compactPhone = phoneNumber.replace(/[\s()-]/g, "");
-    if (!/^(?:0[1-8]\d{8}|\+27[1-8]\d{8})$/.test(compactPhone)) {
-      setError("Enter a valid South African phone number, for example 082 123 4567 or +27 82 123 4567.");
-      setBusy(false);
-      return;
-    }
 
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -75,7 +90,10 @@ export default function CustomerProfileForm({
       <button
         className="btn btn-secondary"
         type="button"
-        onClick={() => { setIsEditing(current => !current); setError(""); }}
+        onClick={() => {
+          if (isEditing) closeEditing();
+          else { setError(""); setMessage(""); setIsEditing(true); }
+        }}
         aria-expanded={isEditing}
       >
         {isEditing ? "Close" : "Edit Profile"}
