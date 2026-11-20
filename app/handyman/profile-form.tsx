@@ -71,6 +71,14 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
     if (!Number.isInteger(years) || years < 0 || years > 60) {
       setError("Please enter experience from 0 to 60 years."); setBusy(false); return;
     }
+    if (phone.trim()) {
+      const compactPhone = phone.trim().replace(/[\\s()-]/g, "");
+      if (!/^(?:0[1-8]\\d{8}|\\+27[1-8]\\d{8})$/.test(compactPhone)) {
+        setError("Enter a valid South African phone number, for example 082 123 4567 or +27 82 123 4567.");
+        setBusy(false);
+        return;
+      }
+    }
     if (services.length === 0) {
       setError("Please choose at least one service."); setBusy(false); return;
     }
@@ -122,7 +130,7 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
     <label className="field-label" htmlFor="handyman-name">Full name</label>
     <input id="handyman-name" required maxLength={100} value={fullName} onChange={e=>setFullName(e.target.value)} />
     <label className="field-label" htmlFor="handyman-phone">Phone number</label>
-    <input id="handyman-phone" type="tel" placeholder="+27..." value={phone} onChange={e=>setPhone(e.target.value)} />
+    <input id="handyman-phone" type="tel" autoComplete="tel" maxLength={25} placeholder="082 123 4567 or +27 82 123 4567" value={phone} onChange={e=>setPhone(e.target.value)} />
     <span className="field-label">Services you offer</span>
     <div className="choice-grid">{serviceOptions.map(service=><label key={service} className="choice-option"><input type="checkbox" checked={services.includes(service)} onChange={()=>toggleService(service)} /> {service}</label>)}</div>
     <span className="field-label">Areas where you can work</span>
