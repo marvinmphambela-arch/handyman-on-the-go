@@ -5,6 +5,7 @@ import VerificationActions from "./verification-actions";
 import CancellationReviewActions from "./cancellation-review-actions";
 import AccountManagement from "./account-management";
 import JobsBookingsManagement from "./jobs-bookings-management";
+import FairPriceCatalogue from "./fairprice-catalogue";
 
 type Submission = {
   handyman_id: string;
@@ -69,6 +70,17 @@ export default async function AdminDashboard() {
     created_at: string; account_status: "active" | "suspended"; verification_status: string | null; email_verified: boolean;
   }[];
 
+  const [fairpriceResult, categoriesResult] = await Promise.all([
+    supabase.rpc("admin_list_fairprice_catalogue"),
+    supabase.from("service_categories").select("id, name").eq("active", true).order("name")
+  ]);
+  const fairpriceRates = (fairpriceResult.data ?? []) as {
+    id: string; service_category_id: string; service_name: string; region: string;
+    complexity: "simple" | "standard" | "complex"; hourly_rate_zar: number;
+    callout_fee_zar: number; travel_fee_zar: number; emergency_multiplier: number;
+    illustrative: boolean; active: boolean; version: string; updated_at: string;
+  }[];
+
   const [overviewResult, paidPayments] = await Promise.all([
     supabase.rpc("get_admin_platform_overview"),
     supabase.from("customer_job_payments").select("amount_zar").eq("status", "paid")
@@ -111,6 +123,7 @@ export default async function AdminDashboard() {
   const navItems = [
     ["overview", "Platform overview"],
     ["accounts", "Account management"],
+    ["fairprice", "FairPrice catalogue"],
     ["verification", "Handyman verification"],
     ["cancellations", "Cancellation requests"],
     ["jobs-bookings", "Jobs & bookings"]
@@ -183,11 +196,11 @@ export default async function AdminDashboard() {
             : <AccountManagement customers={customerAccounts} handymen={handymanAccounts} />}
         </AdminSection>
 
-        <AdminSection id="jobs-bookings" eyebrow="03 · MARKETPLACE" title="Jobs & Bookings" description="Search and inspect jobs, accepted handymen, offers and payment records" accent="#07549a">
+        <AdminSection id="fairprice" eyebrow="03 · TRUST & PRICING" title="FairPrice Catalogue" description="Manage verified service rates and regional pricing guidance" accent="#07549a">\n          <FairPriceCatalogue categories={categoriesResult.data ?? []} initialRates={fairpriceRates} loadError={fairpriceResult.error?.message || categoriesResult.error?.message || undefined} />\n        </AdminSection>\n\n        <AdminSection id="jobs-bookings" eyebrow="04 · MARKETPLACE" title="Jobs & Bookings" description="Search and inspect jobs, accepted handymen, offers and payment records" accent="#07549a">
           <JobsBookingsManagement />
         </AdminSection>
 
-        <AdminSection id="cancellations" eyebrow="04 · CUSTOMER PROTECTION" title="Cancellation Requests" description={`${cancellationRequests?.length ?? 0} request(s) awaiting review`} accent="#07549a">
+        <AdminSection id="cancellations" eyebrow="05 · CUSTOMER PROTECTION" title="Cancellation Requests" description={`${cancellationRequests?.length ?? 0} request(s) awaiting review`} accent="#07549a">
           {cancellationError && <section className="request-card"><h2>Could not load cancellation reviews.</h2><p>{cancellationError.message}</p></section>}
           {!cancellationError && (cancellationRequests ?? []).length === 0 && <p className="form-hint">There are no cancellation requests awaiting review.</p>}
           {(cancellationRequests ?? []).map((item: any) => <article className="request-card" key={item.id}>
@@ -200,7 +213,7 @@ export default async function AdminDashboard() {
           </article>)}
         </AdminSection>
 
-        <AdminSection id="verification" eyebrow="05 · TRUST & SAFETY" title="Handyman Verification" description={`${pending.length} submission(s) awaiting review · identity documents and selfies`} accent="#07549a">
+        <AdminSection id="verification" eyebrow="06 · TRUST & SAFETY" title="Handyman Verification" description={`${pending.length} submission(s) awaiting review · identity documents and selfies`} accent="#07549a">
           <section className="request-card"><div className="eyebrow">REVIEW QUEUE</div><h2>{pending.length} submission{pending.length === 1 ? "" : "s"} awaiting review</h2><p>Review each identity document and separate selfie carefully before making a decision.</p></section>
           {error && <section className="request-card"><h2>We couldn't load submissions.</h2><p>{error.message}</p></section>}
           {!error && submissions.length === 0 && <section className="request-card completion"><h2>No verification submissions yet.</h2><p>New handyman applications will appear here after they submit their documents.</p></section>}
