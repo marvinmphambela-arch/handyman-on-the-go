@@ -66,8 +66,8 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
       return "Please enter experience from 0 to 60 years.";
     }
     if (phone.trim()) {
-      const compactPhone = phone.trim().replace(/[\\s()-]/g, "");
-      if (!/^(?:0[1-8]\\d{8}|\\+27[1-8]\\d{8})$/.test(compactPhone)) {
+      const compactPhone = phone.trim().replace(/[\s()-]/g, "");
+      if (!/^(?:0[1-8]\d{8}|\+27[1-8]\d{8})$/.test(compactPhone)) {
         return "Enter a valid South African phone number, for example 082 123 4567 or +27 82 123 4567.";
       }
     }
@@ -160,7 +160,7 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
     <div className="customer-profile-row">
       <h2>Professional details</h2>
       {isEditing
-        ? <button className="btn btn-primary" type="button" onClick={closeWithoutSaving}>Close</button>
+        ? <button className="btn btn-handyman-close" type="button" onClick={closeWithoutSaving}>Close</button>
         : <button className="btn btn-secondary" type="button" onClick={() => { setError(""); setMessage(""); setIsEditing(true); }}>Edit Profile</button>}
     </div>
     {!isEditing && <p className="form-hint">Your professional details are saved. Select Edit Profile to make changes.</p>}
