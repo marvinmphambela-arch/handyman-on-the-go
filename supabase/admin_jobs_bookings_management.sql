@@ -25,6 +25,7 @@ returns table (
   created_at timestamptz,
   accepted_offer_amount_zar integer,
   offer_count integer,
+  payment_method text,
   payment_status text,
   paid_amount_zar bigint
 )
@@ -65,6 +66,7 @@ begin
     j.created_at,
     accepted.amount_zar,
     coalesce(offers.total, 0)::integer,
+    j.payment_method,
     payments.statuses,
     coalesce(payments.paid_total, 0)::bigint
   from public.jobs j
