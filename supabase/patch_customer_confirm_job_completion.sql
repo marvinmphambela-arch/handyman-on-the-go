@@ -26,6 +26,7 @@ declare
   v_new_balance integer;
   v_existing public.handyman_earnings%rowtype;
   v_job_status public.job_status;
+  v_job_payment_method text;
   v_earning_status text;
   v_commission_status text;
   v_carry record;
@@ -37,11 +38,14 @@ begin
     raise exception 'Choose a valid payment method.';
   end if;
 
-  select j.customer_id, j.status into v_customer_id, v_job_status
+  select j.customer_id, j.status, j.payment_method into v_customer_id, v_job_status, v_job_payment_method
   from public.jobs j where j.id = p_job_id for update;
   if v_customer_id is null then raise exception 'Job not found.'; end if;
   if v_customer_id <> auth.uid() then
     raise exception 'Only the customer who posted this job can confirm completion.';
+  end if;
+  if v_job_payment_method is null or p_payment_method <> v_job_payment_method then
+    raise exception 'The payment method must match the method selected when the job was posted. It cannot be changed.';
   end if;
 
   if v_job_status = 'completed'::public.job_status then
