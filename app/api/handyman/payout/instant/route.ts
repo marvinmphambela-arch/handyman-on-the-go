@@ -4,7 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { decryptBankAccountNumber } from "@/lib/security/bank-account-encryption";
 import {
   createSouthAfricaRecipient,
-  initiateSouthAfricaTransfer
+  initiateSouthAfricaTransfer,
+  verifySouthAfricaTransfer
 } from "@/lib/paystack/transfers";
 
 export const runtime = "nodejs";
@@ -115,9 +116,7 @@ export async function POST(request: Request) {
       .select("id, gross_amount_zar, fee_amount_zar, net_amount_zar, paystack_recipient_code_snapshot, transfer_reference, transfer_status")
       .eq("handyman_id", handymanId)
       .eq("payout_type", "instant")
-      .eq("status", "requested")
-      .is("transfer_reference", null)
-      .is("transfer_status", null)
+      .in("status", ["requested", "processing"])
       .order("requested_at", { ascending: false })
       .limit(2);
 
@@ -184,35 +183,48 @@ export async function POST(request: Request) {
     );
     if (processingError) throw processingError;
 
-    let transfer;
-    try {
-      transfer = await initiateSouthAfricaTransfer({
-        amountKobo: netAmountKobo,
-        recipientCode,
-        reference,
-        reason: "Handyman On The Go instant withdrawal"
-      });
-    } catch (error) {
-      // A network/timeout error is intentionally left as processing because
-      // Paystack may have accepted the request. The same reference must be
-      // retried/verified rather than creating a second transfer.
-      const status = (error as Error & { status?: number }).status;
-      if (status && status >= 400 && status < 500) {
-        await admin.rpc("settle_handyman_payout", {
-          p_transfer_reference: reference,
-          p_transfer_status: "failed",
-          p_failure_reason: (error as Error).message
-        });
-        return NextResponse.json({ error: (error as Error).message }, { status: 502 });
+    // Always verify the deterministic reference before attempting another
+    // transfer. A verification outage is not treated as "not found".
+    let transfer = await verifySouthAfricaTransfer(reference);
+    if (transfer) {
+      if (transfer.data.reference !== reference
+        || transfer.data.currency !== "ZAR"
+        || transfer.data.amount !== netAmountKobo) {
+        throw new Error("The existing Paystack transfer does not match this withdrawal. Please contact support.");
       }
-      throw error;
+    } else {
+      try {
+        transfer = await initiateSouthAfricaTransfer({
+          amountKobo: netAmountKobo,
+          recipientCode,
+          reference,
+          reason: "Handyman On The Go instant withdrawal"
+        });
+      } catch (error) {
+        // Even a 4xx response is left for verification/reconciliation. Never
+        // release reserved earnings based only on an ambiguous API response.
+        console.error("Paystack transfer initiation needs verification:", error);
+        return NextResponse.json({
+          success: true,
+          payoutRequestId,
+          grossAmountZar,
+          feeAmountZar,
+          netAmountZar: netAmountKobo / 100,
+          netAmountKobo,
+          transferStatus: "pending",
+          transferReference: reference
+        });
+      }
     }
 
     const transferStatus = transfer.data.status;
-    if (transferStatus === "success") {
+    if (transferStatus === "success" || transferStatus === "failed" || transferStatus === "reversed") {
       const { error: settleError } = await admin.rpc("settle_handyman_payout", {
         p_transfer_reference: reference,
-        p_transfer_status: "success"
+        p_transfer_status: transferStatus,
+        p_failure_reason: transfer.data.failures
+          ? JSON.stringify(transfer.data.failures)
+          : null
       });
       if (settleError) throw settleError;
     }
