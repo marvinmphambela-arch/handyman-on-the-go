@@ -638,3 +638,40 @@ select:disabled { opacity: .65; cursor: not-allowed; }
   .shared-notification-icon { width: 32px; height: 32px; flex-basis: 32px; font-size: 14px; }
 }
 
+
+
+/* Compact customer profile panel: visible but secondary to notifications and jobs. */
+.customer-profile-compact {
+  margin: 2.5rem 0 1rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--line, #e5e7eb);
+  color: inherit;
+}
+.customer-profile-compact .section-heading {
+  margin: 0;
+  align-items: center;
+  gap: 1rem;
+}
+.customer-profile-compact .section-heading h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.customer-profile-compact .eyebrow {
+  margin-bottom: .35rem;
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+.customer-profile-compact .privacy-note {
+  margin: .25rem 0 0;
+  font-size: .9rem;
+}
+.customer-profile-compact .btn {
+  font-size: .88rem;
+  padding: .65rem 1rem;
+}
+.customer-profile-compact form {
+  margin-top: 1.25rem;
+  max-width: 620px;
+}
