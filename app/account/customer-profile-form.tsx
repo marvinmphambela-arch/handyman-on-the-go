@@ -68,7 +68,7 @@ export default function CustomerProfileForm({
     setBusy(false);
   }
 
-  return <section className="request-card form-step customer-profile-card">
+  return <section className="customer-profile-compact">
     <div className="eyebrow">YOUR PROFILE</div>
     <div className="section-heading">
       <div>
