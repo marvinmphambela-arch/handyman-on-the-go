@@ -29,6 +29,7 @@ type Job = {
   city: string;
   urgency: string;
   status: string;
+  payment_method: "platform" | "direct_eft" | null;
   handyman_en_route_at: string | null;
   cancellation_reason: string | null;
   cancellation_compensation_zar: number | null;
@@ -62,7 +63,7 @@ export default async function AccountPage() {
 
   const { data, error } = await supabase
     .from("jobs")
-    .select("id, title, description, suburb, street_address, city, urgency, status, handyman_en_route_at, cancellation_reason, cancellation_compensation_zar, replacement_handyman_decision, created_at, service_categories(name), job_offers(id, amount_zar, message, estimated_arrival_minutes, status, created_at)")
+    .select("id, title, description, suburb, street_address, city, urgency, status, payment_method, handyman_en_route_at, cancellation_compensation_zar, replacement_handyman_decision, created_at, service_categories(name), job_offers(id, amount_zar, message, estimated_arrival_minutes, status, created_at)")
     .eq("customer_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -114,6 +115,7 @@ export default async function AccountPage() {
               return <article className="request-card customer-job-card" id={`job-${job.id}`} key={job.id}>
                 <div className="customer-job-topline"><div className="eyebrow">{category ?? "Home service"}</div><StatusBadge status={job.status} /></div>
                 <h3 className="customer-job-title">{job.title}</h3>
+                <div className={`payment-method-badge ${job.payment_method === "platform" ? "payment-method-platform" : "payment-method-direct"}`}><span className="payment-method-icon" aria-hidden="true">{job.payment_method === "platform" ? "💳" : "🏦"}</span><span>{job.payment_method === "platform" ? "Platform Payment" : job.payment_method === "direct_eft" ? "Direct EFT" : "Payment method not recorded"}</span></div>
                 <p className="customer-job-location">{job.suburb ? job.suburb + ", " : ""}{job.city} · {job.urgency}</p>
                 <details className="customer-job-details">
                   <summary>View job details and actions</summary>
@@ -130,7 +132,7 @@ export default async function AccountPage() {
                         {canChoose && (offer.status === "pending" || offer.status === "countered") && <div className="offer-decision-actions"><AcceptOfferButton offerId={offer.id} /><DeclineOfferButton offerId={offer.id} /></div>}
                       </div>)}</div>}
                     {job.status === "confirmed" && <><p className="success-note">Your booking is confirmed.</p><div className="review-summary"><div className="review-row"><small>YOUR JOB ADDRESS</small><b>{job.street_address || "No street address was supplied."}</b></div></div><p className="privacy-note">You may cancel before work starts. If the handyman has marked themselves as on the way, a fixed R250 travel compensation will be recorded for them.</p>{job.handyman_en_route_at && <p className="success-note">The handyman marked themselves as on the way at {new Date(job.handyman_en_route_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}.</p>}<CancelBookingButton jobId={job.id} enRoute={Boolean(job.handyman_en_route_at)} /></>}
-                    {job.status === "in_progress" && <><p className="success-note">The handyman has marked this job as in progress. You can confirm completion after the work is finished and paid for.</p><ConfirmJobCompletionButton jobId={job.id} /><CancelBookingButton jobId={job.id} enRoute={Boolean(job.handyman_en_route_at)} inProgress /></>}
+                    {job.status === "in_progress" && <><p className="success-note">The handyman has marked this job as in progress. You can confirm completion after the work is finished and paid for.</p><ConfirmJobCompletionButton jobId={job.id} paymentMethod={job.payment_method ?? "platform"} /><CancelBookingButton jobId={job.id} enRoute={Boolean(job.handyman_en_route_at)} inProgress /></>}
                     {job.status === "completed" && <><p className="success-note">This job has been marked completed. The 10% platform commission was recorded against the handyman’s Access Wallet.</p><Link href={`/account/receipt/${job.id}`} className="btn btn-orange">View service receipt</Link></>}
                     {job.status === "cancelled" && <><p className="privacy-note">This booking has been cancelled. It remains in your job history.</p>{job.cancellation_reason && <p>Cancellation reason: {job.cancellation_reason}</p>}{(job.cancellation_compensation_zar ?? 0) > 0 && <p className="success-note">R{job.cancellation_compensation_zar} travel compensation has been recorded for the handyman. Payment collection is not yet automated.</p>}{job.replacement_handyman_decision === "not_offered" && <FindReplacementHandyman jobId={job.id} />}{job.replacement_handyman_decision === "accepted" && <p className="success-note">You asked us to find another handyman. This same request is open for new offers.</p>}{job.replacement_handyman_decision === "declined" && <p className="privacy-note">You chose not to look for another handyman.</p>}</>}
                     {job.status !== "open" && job.status !== "confirmed" && job.status !== "in_progress" && job.status !== "completed" && <p className="privacy-note">This job is no longer accepting offers.</p>}
