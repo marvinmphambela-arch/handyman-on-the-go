@@ -8,12 +8,12 @@ import { createClient } from "@/lib/supabase/client";
 type Mode = "login" | "signup";
 
 function isValidEmail(value: string) {
-  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(value.trim());
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
 }
 
 function isValidSouthAfricanPhone(value: string) {
-  const compact = value.replace(/[\\s()-]/g, "");
-  return /^(?:0[1-8]\\d{8}|\\+27[1-8]\\d{8})$/.test(compact);
+  const compact = value.replace(/[\s()-]/g, "");
+  return /^(?:0[1-8]\d{8}|\+27[1-8]\d{8})$/.test(compact);
 }
 
 export default function AuthForm({ mode }: { mode: Mode }) {
