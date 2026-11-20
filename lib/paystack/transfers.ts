@@ -80,6 +80,20 @@ export type PaystackTransferResponse = {
   };
 };
 
+export async function verifySouthAfricaTransfer(reference: string) {
+  try {
+    return await paystackRequest<PaystackTransferResponse>(
+      `/transfer/verify/${encodeURIComponent(reference)}`,
+      { method: "GET" }
+    );
+  } catch (error) {
+    // A 404 means Paystack has no transfer for this reference. Other errors
+    // remain errors so an outage is never mistaken for permission to retry.
+    if ((error as Error & { status?: number }).status === 404) return null;
+    throw error;
+  }
+}
+
 export async function initiateSouthAfricaTransfer(input: {
   amountKobo: number;
   recipientCode: string;
