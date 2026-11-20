@@ -33,7 +33,7 @@ export default async function AdminDashboard() {
   }[];
   const handymanAccounts = (handymanAccountsResult.data ?? []) as {
     id: string; role: "handyman"; full_name: string | null; phone: string | null;
-    created_at: string; account_status: "active" | "suspended"; verification_status: string | null;
+    created_at: string; account_status: "active" | "suspended"; verification_status: string | null; email_verified: boolean;
   }[];
 
   // Aggregate counts are returned by an admin-only SECURITY DEFINER RPC.
