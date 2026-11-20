@@ -73,6 +73,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         </div>
         {error && <p className="form-error" role="alert">{error}</p>}{message && <p className="privacy-note" role="status">{message}</p>}
         <button className="btn btn-orange" type="submit" disabled={busy}>{busy ? "Please wait..." : mode === "signup" ? "Create account" : "Sign in"}</button>
+        {mode === "login" && <p className="form-hint"><Link href="/forgot-password">Forgot password?</Link></p>}
         <p className="form-hint">{mode === "signup" ? "Already registered? " : "New to Handyman On The Go? "}<Link href={mode === "signup" ? "/login" : "/signup"}>{mode === "signup" ? "Sign in" : "Create an account"}</Link></p>
       </form>
     </div></main>;
