@@ -89,6 +89,7 @@ export default async function HandymanDashboard() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const emailVerified = Boolean(user.email_confirmed_at);
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -164,6 +165,7 @@ export default async function HandymanDashboard() {
         <div className="eyebrow">HANDYMAN WORKSPACE</div>
         <h1>Your handyman dashboard.</h1>
         <p>See new opportunities, active bookings and important updates in one place.</p>
+        <p className="form-hint">Email verification: <strong>{emailVerified ? "Verified" : "Not verified"}</strong></p>
         <SharedNotificationCenter role="handyman" />
         <div className="button-row"><Link className="btn btn-dark" href="/handyman/verification">Identity verification</Link></div>
       </div>
