@@ -12,7 +12,7 @@ type Rate = {
   illustrative: boolean; active: boolean; version: string; updated_at: string;
 };
 
-const blank = {
+type RateForm = {\n  id: string; service_category_id: string; region: string;\n  complexity: "simple" | "standard" | "complex";\n  hourly_rate_zar: string; callout_fee_zar: string; travel_fee_zar: string;\n  emergency_multiplier: string; version: string; illustrative: boolean;\n};\n\nconst blank: RateForm = {
   id: "", service_category_id: "", region: "Gauteng", complexity: "standard" as const,
   hourly_rate_zar: "0", callout_fee_zar: "0", travel_fee_zar: "0",
   emergency_multiplier: "1", version: "draft", illustrative: true
@@ -22,14 +22,14 @@ export default function FairPriceCatalogue({ categories, initialRates, loadError
   categories: Category[]; initialRates: Rate[]; loadError?: string;
 }) {
   const [rates, setRates] = useState(initialRates);
-  const [form, setForm] = useState(blank);
+  const [form, setForm] = useState<RateForm>(blank);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(loadError || "");
   const [notice, setNotice] = useState("");
   const router = useRouter();
   const editing = Boolean(form.id);
 
-  const update = (key: keyof typeof blank, value: string | boolean) =>
+  const update = (key: keyof RateForm, value: string | boolean) =>
     setForm(current => ({ ...current, [key]: value }));
 
   function edit(rate: Rate) {
