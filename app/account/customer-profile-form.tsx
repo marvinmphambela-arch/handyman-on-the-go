@@ -69,12 +69,8 @@ export default function CustomerProfileForm({
   }
 
   return <section className="customer-profile-compact">
-    <div className="eyebrow">YOUR PROFILE</div>
-    <div className="section-heading">
-      <div>
-        <h2>Your Profile</h2>
-        <p className="privacy-note">Manage your personal and contact information.</p>
-      </div>
+    <div className="customer-profile-row">
+      <h2>Your Profile</h2>
       <button
         className="btn btn-secondary"
         type="button"
