@@ -129,6 +129,7 @@ export async function POST(request: Request) {
     let grossAmountZar: number;
     let feeAmountZar: number;
     let netAmountKobo: number;
+    let expectedRecipientCode = recipientCode;
 
     const pending = pendingRequests?.[0];
     if (pending) {
@@ -140,6 +141,7 @@ export async function POST(request: Request) {
 
       const savedRecipientCode = pending.paystack_recipient_code_snapshot as string | null;
       if (savedRecipientCode) recipientCode = savedRecipientCode;
+      expectedRecipientCode = recipientCode;
       if (!recipientCode) {
         throw new Error("The saved payout recipient is unavailable. Please contact support.");
       }
@@ -187,10 +189,17 @@ export async function POST(request: Request) {
     // transfer. A verification outage is not treated as "not found".
     let transfer = await verifySouthAfricaTransfer(reference);
     if (transfer) {
+      const verifiedRecipientCode = typeof transfer.data.recipient === "object"
+        && transfer.data.recipient !== null
+        ? transfer.data.recipient.recipient_code
+        : null;
+
       if (transfer.data.reference !== reference
         || transfer.data.currency !== "ZAR"
-        || transfer.data.amount !== netAmountKobo) {
-        throw new Error("The existing Paystack transfer does not match this withdrawal. Please contact support.");
+        || transfer.data.amount !== netAmountKobo
+        || !expectedRecipientCode
+        || verifiedRecipientCode !== expectedRecipientCode) {
+        throw new Error("The existing Paystack transfer does not match this withdrawal or its saved bank recipient. Please contact support.");
       }
     } else {
       try {
