@@ -39,8 +39,9 @@ export default function CustomerProfileForm({
       setBusy(false);
       return;
     }
-    if (phoneNumber.length > 30) {
-      setError("Please enter a valid phone number.");
+    const compactPhone = phoneNumber.replace(/[\\s()-]/g, "");
+    if (!/^(?:0[1-8]\\d{8}|\\+27[1-8]\\d{8})$/.test(compactPhone)) {
+      setError("Enter a valid South African phone number, for example 082 123 4567 or +27 82 123 4567.");
       setBusy(false);
       return;
     }
@@ -85,7 +86,7 @@ export default function CustomerProfileForm({
       <label className="field-label" htmlFor="customer-profile-name">Full name</label>
       <input id="customer-profile-name" type="text" autoComplete="name" required maxLength={100} value={fullName} onChange={event => setFullName(event.target.value)} />
       <label className="field-label" htmlFor="customer-profile-phone">Phone number</label>
-      <input id="customer-profile-phone" type="tel" autoComplete="tel" required maxLength={30} placeholder="+27..." value={phone} onChange={event => setPhone(event.target.value)} />
+      <input id="customer-profile-phone" type="tel" autoComplete="tel" required maxLength={25} placeholder="082 123 4567 or +27 82 123 4567" value={phone} onChange={event => setPhone(event.target.value)} />
       <label className="field-label" htmlFor="customer-profile-email">Email address</label>
       <input id="customer-profile-email" type="email" value={email} readOnly aria-readonly="true" />
       <p className="form-hint">Your email address is used to sign in and cannot be changed here.</p>
