@@ -730,3 +730,16 @@ select:disabled { opacity: .65; cursor: not-allowed; }
   background: var(--navy2);
   border-color: var(--navy2);
 }
+
+
+/* Handyman profile Close action: explicit blue styling. */
+.btn-handyman-close {
+  background: #1f5fae;
+  color: #fff;
+  border-color: #1f5fae;
+  box-shadow: none;
+}
+.btn-handyman-close:hover:not(:disabled) {
+  background: #194f91;
+  border-color: #194f91;
+}
