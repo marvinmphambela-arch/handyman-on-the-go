@@ -19,6 +19,7 @@ type AdminJob = {
   created_at: string;
   accepted_offer_amount_zar: number | null;
   offer_count: number;
+  payment_method: string | null;
   payment_status: string | null;
   paid_amount_zar: number | null;
 };
@@ -130,7 +131,7 @@ export default function JobsBookingsManagement() {
           <div><div className="eyebrow">CUSTOMER</div><div>{job.customer_name || "Not available"}</div><div className="form-hint">{job.customer_phone || "No phone"}</div></div>
           <div><div className="eyebrow">HANDYMAN</div><div>{job.handyman_name || "Not assigned"}</div><div className="form-hint">{job.handyman_phone || "No phone"}</div></div>
           <div><div className="eyebrow">SERVICE &amp; LOCATION</div><div>{job.service_category || "Uncategorised"}</div><div className="form-hint">{[job.suburb, job.city, job.province].filter(Boolean).join(", ") || "Location not available"}</div></div>
-          <div><div className="eyebrow">OFFERS &amp; PAYMENT</div><div>{job.offer_count ?? 0} offer(s)</div><div className="form-hint">Payment: {job.payment_status || "No payment record"}</div><div className="form-hint">Paid: {money(job.paid_amount_zar)}</div></div>
+          <div><div className="eyebrow">OFFERS &amp; PAYMENT</div><div>{job.offer_count ?? 0} offer(s)</div><div className={`payment-method-badge ${job.payment_method === "platform" ? "payment-method-platform" : "payment-method-direct"}`}><span className="payment-method-icon" aria-hidden="true">{job.payment_method === "platform" ? "💳" : "🏦"}</span><span>{job.payment_method === "platform" ? "Platform Payment" : job.payment_method === "direct_eft" ? "Direct EFT" : "Not recorded"}</span></div><div className="form-hint">Payment: {job.payment_status || "No payment record"}</div><div className="form-hint">Paid: {money(job.paid_amount_zar)}</div></div>
         </div>
         <p className="form-hint" style={{ marginBottom: 0 }}>Posted {new Date(job.created_at).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}</p>
       </article>)}
