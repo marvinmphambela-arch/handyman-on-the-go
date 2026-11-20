@@ -55,6 +55,21 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+
+  function closeWithoutSaving() {
+    setFullName(profile?.full_name ?? "");
+    setPhone(profile?.phone ?? "");
+    setServices(profile?.services ?? []);
+    setAreas(profile?.service_areas ?? []);
+    setRadius(String(profile?.search_radius_km ?? 10));
+    setExperience(String(profile?.years_experience ?? 0));
+    setBio(profile?.bio ?? "");
+    setAvailable(profile?.available ?? true);
+    setError("");
+    setMessage("");
+    setIsEditing(false);
+  }
 
   function toggleService(service: string) {
     setServices(current => current.includes(service) ? current.filter(item => item !== service) : [...current, service]);
@@ -126,7 +141,15 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
     setBusy(false);
   }
 
-  return <form className="request-card form-step" onSubmit={save}>
+  return <section className="request-card form-step">
+    <div className="customer-profile-row">
+      <h2>Professional details</h2>
+      {isEditing
+        ? <button className="btn btn-secondary" type="button" onClick={closeWithoutSaving}>Close</button>
+        : <button className="btn btn-secondary" type="button" onClick={() => { setError(""); setMessage(""); setIsEditing(true); }}>Edit Profile</button>}
+    </div>
+    {!isEditing && <p className="form-hint">Your professional details are saved. Select Edit Profile to make changes.</p>}
+    {isEditing && <form className="form-step" onSubmit={save}>
     <label className="field-label" htmlFor="handyman-name">Full name</label>
     <input id="handyman-name" required maxLength={100} value={fullName} onChange={e=>setFullName(e.target.value)} />
     <label className="field-label" htmlFor="handyman-phone">Phone number</label>
@@ -156,5 +179,6 @@ export default function HandymanProfileForm({ profile }: { profile: Profile | nu
     {error && <p className="form-error" role="alert">{error}</p>}
     {message && <p className="privacy-note" role="status">{message}</p>}
     <button className="btn btn-orange" type="submit" disabled={busy}>{busy ? "Saving..." : "Save my profile"}</button>
-  </form>;
+    </form>}
+  </section>;
 }
