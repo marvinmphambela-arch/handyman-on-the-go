@@ -153,9 +153,12 @@ export async function POST(request: Request) {
       feeAmountZar = Number(pending.fee_amount_zar);
       netAmountKobo = Math.round(Number(pending.net_amount_zar) * 100);
     } else {
-      const { data: payout, error: payoutError } = await admin.rpc(
+      // This reservation RPC derives the handyman from auth.uid(), so it
+      // must run with the authenticated user's session, not service_role.
+      const sessionClient = await createClient();
+      const { data: payout, error: payoutError } = await sessionClient.rpc(
         "request_instant_handyman_payout",
-        { p_handyman_id: handymanId, p_amount_zar: amountZar }
+        { p_amount_zar: amountZar }
       );
 
       if (payoutError) throw payoutError;
@@ -163,7 +166,7 @@ export async function POST(request: Request) {
       payoutRequestId = payout?.payout_request_id;
       grossAmountZar = Number(payout?.gross_amount_zar);
       feeAmountZar = Number(payout?.fee_amount_zar);
-      netAmountKobo = Number(payout?.net_amount_kobo);
+      netAmountKobo = Math.round(Number(payout?.net_amount_zar) * 100);
     }
 
     if (typeof payoutRequestId !== "string"
