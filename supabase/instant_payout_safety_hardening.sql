@@ -48,11 +48,12 @@ as $$
 declare
   v_handyman_id uuid := auth.uid();
   v_fee_percent numeric(5,2);
-  v_minimum_fee integer;
+  v_minimum_fee numeric(12,2);
   v_eligible integer;
   v_gross integer := 0;
-  v_fee integer;
-  v_net integer;
+  v_fee numeric(12,2);
+  v_net numeric(12,2);
+  v_net_kobo bigint;
   v_request_id uuid;
   v_bank public.handyman_bank_accounts%rowtype;
   v_earning record;
@@ -109,18 +110,16 @@ begin
   end if;
 
   v_gross := p_amount_zar;
-  v_fee := greatest(
-    ceil(v_gross * v_fee_percent / 100.0)::integer,
-    v_minimum_fee
-  );
+  v_fee := greatest(round(v_gross * v_fee_percent / 100.0, 2), v_minimum_fee);
 
   -- The product has no platform-set minimum withdrawal. The request must,
   -- however, leave a non-negative amount after its stated instant fee.
-  if v_fee > v_gross then
+  if v_fee >= v_gross then
     raise exception 'This withdrawal amount is smaller than the instant withdrawal fee.';
   end if;
 
-  v_net := v_gross - v_fee;
+  v_net := round(v_gross - v_fee, 2);
+  v_net_kobo := (v_net * 100)::bigint;
 
   insert into public.handyman_payout_requests (
     handyman_id, payout_type, gross_amount_zar, fee_amount_zar,
@@ -178,6 +177,7 @@ begin
     'gross_amount_zar', p_amount_zar,
     'fee_amount_zar', v_fee,
     'net_amount_zar', v_net,
+    'net_amount_kobo', v_net_kobo,
     'account_last4', v_bank.account_number_last4
   );
 exception
