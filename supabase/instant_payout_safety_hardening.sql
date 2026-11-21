@@ -44,7 +44,7 @@ returns jsonb
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   v_handyman_id uuid := auth.uid();
   v_fee_percent numeric(5,2);
@@ -184,7 +184,7 @@ exception
   when unique_violation then
     raise exception 'Some earnings are already reserved for another payout. Please try again.';
 end;
-$;
+$$;
 
 revoke all on function public.request_instant_handyman_payout(integer)
   from public, anon;
