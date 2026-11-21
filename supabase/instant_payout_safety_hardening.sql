@@ -2,6 +2,13 @@
 -- Keeps the agreed 2% fee / R5 minimum and does not initiate transfers.
 begin;
 
+-- Keep fee and net payout values precise to cents, matching the payout RPC.
+alter table public.handyman_payout_requests
+  alter column fee_amount_zar type numeric(12,2)
+    using fee_amount_zar::numeric(12,2),
+  alter column net_amount_zar type numeric(12,2)
+    using net_amount_zar::numeric(12,2);
+
 -- Only platform earnings whose release time has arrived may be withdrawn.
 create or replace function public.get_handyman_withdrawable_earnings(p_handyman_id uuid)
 returns table (
