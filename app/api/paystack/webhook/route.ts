@@ -8,27 +8,79 @@ export async function POST(request: Request) {
   console.info("Paystack webhook request received.");
   const paymentSecret = process.env.PAYSTACK_SECRET_KEY;
   const transferSecret = process.env.PAYSTACK_TRANSFER_SECRET_KEY;
-  if (!paymentSecret && !transferSecret) {
-    console.error("Paystack webhook is not configured: no secret key is present.");
+  const webhookSigningSecret = process.env.PAYSTACK_WEBHOOK_SECRET;
+  if (!paymentSecret && !transferSecret && !webhookSigningSecret) {
+    console.error("Paystack webhook is not configured: no signing secret is present.");
     return NextResponse.json({ error: "Webhook is not configured." }, { status: 503 });
   }
 
   const rawBody = await request.text();
-  const signature = request.headers.get("x-paystack-signature");
-  if (!signature || !/^[a-f0-9]{128}$/i.test(signature)) {
-    console.warn("Paystack webhook rejected: signature header is missing or malformed.");
-    return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
-  }
+  const modernSignature = request.headers.get("paystack-signature");
 
-  const supplied = Buffer.from(signature, "hex");
-  const secrets = [paymentSecret, transferSecret].filter((value): value is string => Boolean(value));
-  const validSignature = secrets.some(secret => {
-    const expected = createHmac("sha512", secret).update(rawBody).digest();
-    return supplied.length === expected.length && timingSafeEqual(supplied, expected);
-  });
-  if (!validSignature) {
-    console.warn("Paystack webhook rejected: signature did not match configured secret keys.");
-    return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
+  // Prefer the current timestamped signing-secret format whenever Paystack
+  // supplies it. Do not downgrade to the deprecated header if modern
+  // verification fails.
+  if (modernSignature) {
+    if (!webhookSigningSecret) {
+      console.error("Paystack-Signature received but PAYSTACK_WEBHOOK_SECRET is not configured.");
+      return NextResponse.json({ error: "Webhook signing is not configured." }, { status: 503 });
+    }
+
+    let timestamp: number | null = null;
+    const signatures: string[] = [];
+    for (const part of modernSignature.split(",")) {
+      const separator = part.indexOf("=");
+      if (separator === -1) continue;
+      const key = part.slice(0, separator).trim();
+      const value = part.slice(separator + 1).trim();
+      if (key === "t") {
+        if (timestamp !== null || !/^[0-9]+$/.test(value)) {
+          return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
+        }
+        timestamp = Number(value);
+      } else if (key === "v1") {
+        const colon = value.indexOf(":");
+        if (colon !== -1) signatures.push(value.slice(colon + 1));
+      }
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    if (timestamp === null || Math.abs(now - timestamp) > 300 || signatures.length === 0) {
+      return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
+    }
+
+    const expected = createHmac("sha512", webhookSigningSecret)
+      .update(`${timestamp}.`)
+      .update(rawBody)
+      .digest();
+    const validSignature = signatures.some(signature => {
+      if (!/^[a-f0-9]{128}$/.test(signature)) return false;
+      const supplied = Buffer.from(signature, "hex");
+      return supplied.length === expected.length && timingSafeEqual(supplied, expected);
+    });
+    if (!validSignature) {
+      console.warn("Paystack webhook rejected: Paystack-Signature did not match the signing secret.");
+      return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
+    }
+  } else {
+    // Backward compatibility while this Paystack integration migrates its
+    // dashboard configuration to webhook signing secrets.
+    const signature = request.headers.get("x-paystack-signature");
+    if (!signature || !/^[a-f0-9]{128}$/i.test(signature)) {
+      console.warn("Paystack webhook rejected: signature header is missing or malformed.");
+      return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
+    }
+
+    const supplied = Buffer.from(signature, "hex");
+    const secrets = [paymentSecret, transferSecret].filter((value): value is string => Boolean(value));
+    const validSignature = secrets.some(secret => {
+      const expected = createHmac("sha512", secret).update(rawBody).digest();
+      return supplied.length === expected.length && timingSafeEqual(supplied, expected);
+    });
+    if (!validSignature) {
+      console.warn("Paystack webhook rejected: deprecated signature did not match configured API keys.");
+      return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
+    }
   }
   console.info("Paystack webhook signature verified.");
 
@@ -81,10 +133,19 @@ export async function POST(request: Request) {
         "transfer.failed": "failed",
         "transfer.reversed": "reversed"
       };
+      const eventStatus = statusMap[event.event];
+      if (transfer?.status !== eventStatus) {
+        console.warn("Paystack transfer webhook ignored: event name and transfer status disagree.", {
+          reference,
+          event: event.event,
+          transferStatus: transfer?.status
+        });
+        return NextResponse.json({ received: true });
+      }
 
       const { error: settleError } = await admin.rpc("settle_handyman_payout", {
         p_transfer_reference: reference,
-        p_transfer_status: statusMap[event.event],
+        p_transfer_status: eventStatus,
         p_failure_reason: typeof transfer?.failures === "string"
           ? transfer.failures
           : transfer?.failures ? JSON.stringify(transfer.failures) : null
