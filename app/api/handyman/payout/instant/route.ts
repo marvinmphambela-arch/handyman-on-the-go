@@ -4,7 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { decryptBankAccountNumber } from "@/lib/security/bank-account-encryption";
 import {
   createSouthAfricaRecipient,
-  initiateSouthAfricaTransfer
+  initiateSouthAfricaTransfer,
+  verifySouthAfricaTransfer
 } from "@/lib/paystack/transfers";
 
 export const runtime = "nodejs";
@@ -115,9 +116,7 @@ export async function POST(request: Request) {
       .select("id, gross_amount_zar, fee_amount_zar, net_amount_zar, paystack_recipient_code_snapshot, transfer_reference, transfer_status")
       .eq("handyman_id", handymanId)
       .eq("payout_type", "instant")
-      .eq("status", "requested")
-      .is("transfer_reference", null)
-      .is("transfer_status", null)
+      .in("status", ["requested", "processing"])
       .order("requested_at", { ascending: false })
       .limit(2);
 
@@ -130,6 +129,7 @@ export async function POST(request: Request) {
     let grossAmountZar: number;
     let feeAmountZar: number;
     let netAmountKobo: number;
+    let expectedRecipientCode = recipientCode;
 
     const pending = pendingRequests?.[0];
     if (pending) {
@@ -140,19 +140,25 @@ export async function POST(request: Request) {
       }
 
       const savedRecipientCode = pending.paystack_recipient_code_snapshot as string | null;
-      if (savedRecipientCode) recipientCode = savedRecipientCode;
-      if (!recipientCode) {
-        throw new Error("The saved payout recipient is unavailable. Please contact support.");
+      if (!savedRecipientCode) {
+        throw new Error("The original payout recipient is not recorded for this withdrawal. Please contact support before retrying.");
       }
+      // Recovery must use only the recipient saved with the original request.
+      // Never fall back to the handyman's current bank account.
+      recipientCode = savedRecipientCode;
+      expectedRecipientCode = savedRecipientCode;
 
       payoutRequestId = pending.id;
       grossAmountZar = Number(pending.gross_amount_zar);
       feeAmountZar = Number(pending.fee_amount_zar);
       netAmountKobo = Math.round(Number(pending.net_amount_zar) * 100);
     } else {
-      const { data: payout, error: payoutError } = await admin.rpc(
+      // This reservation RPC derives the handyman from auth.uid(), so it
+      // must run with the authenticated user's session, not service_role.
+      const sessionClient = await createClient();
+      const { data: payout, error: payoutError } = await sessionClient.rpc(
         "request_instant_handyman_payout",
-        { p_handyman_id: handymanId, p_amount_zar: amountZar }
+        { p_amount_zar: amountZar }
       );
 
       if (payoutError) throw payoutError;
@@ -160,7 +166,7 @@ export async function POST(request: Request) {
       payoutRequestId = payout?.payout_request_id;
       grossAmountZar = Number(payout?.gross_amount_zar);
       feeAmountZar = Number(payout?.fee_amount_zar);
-      netAmountKobo = Number(payout?.net_amount_kobo);
+      netAmountKobo = Math.round(Number(payout?.net_amount_zar) * 100);
     }
 
     if (typeof payoutRequestId !== "string"
@@ -184,35 +190,55 @@ export async function POST(request: Request) {
     );
     if (processingError) throw processingError;
 
-    let transfer;
-    try {
-      transfer = await initiateSouthAfricaTransfer({
-        amountKobo: netAmountKobo,
-        recipientCode,
-        reference,
-        reason: "Handyman On The Go instant withdrawal"
-      });
-    } catch (error) {
-      // A network/timeout error is intentionally left as processing because
-      // Paystack may have accepted the request. The same reference must be
-      // retried/verified rather than creating a second transfer.
-      const status = (error as Error & { status?: number }).status;
-      if (status && status >= 400 && status < 500) {
-        await admin.rpc("settle_handyman_payout", {
-          p_transfer_reference: reference,
-          p_transfer_status: "failed",
-          p_failure_reason: (error as Error).message
-        });
-        return NextResponse.json({ error: (error as Error).message }, { status: 502 });
+    // Always verify the deterministic reference before attempting another
+    // transfer. A verification outage is not treated as "not found".
+    let transfer = await verifySouthAfricaTransfer(reference);
+    if (transfer) {
+      const verifiedRecipientCode = typeof transfer.data.recipient === "object"
+        && transfer.data.recipient !== null
+        ? transfer.data.recipient.recipient_code
+        : null;
+
+      if (transfer.data.reference !== reference
+        || transfer.data.currency !== "ZAR"
+        || transfer.data.amount !== netAmountKobo
+        || !expectedRecipientCode
+        || verifiedRecipientCode !== expectedRecipientCode) {
+        throw new Error("The existing Paystack transfer does not match this withdrawal or its saved bank recipient. Please contact support.");
       }
-      throw error;
+    } else {
+      try {
+        transfer = await initiateSouthAfricaTransfer({
+          amountKobo: netAmountKobo,
+          recipientCode,
+          reference,
+          reason: "Handyman On The Go instant withdrawal"
+        });
+      } catch (error) {
+        // Even a 4xx response is left for verification/reconciliation. Never
+        // release reserved earnings based only on an ambiguous API response.
+        console.error("Paystack transfer initiation needs verification:", error);
+        return NextResponse.json({
+          success: true,
+          payoutRequestId,
+          grossAmountZar,
+          feeAmountZar,
+          netAmountZar: netAmountKobo / 100,
+          netAmountKobo,
+          transferStatus: "pending",
+          transferReference: reference
+        });
+      }
     }
 
     const transferStatus = transfer.data.status;
-    if (transferStatus === "success") {
+    if (transferStatus === "success" || transferStatus === "failed" || transferStatus === "reversed") {
       const { error: settleError } = await admin.rpc("settle_handyman_payout", {
         p_transfer_reference: reference,
-        p_transfer_status: "success"
+        p_transfer_status: transferStatus,
+        p_failure_reason: transfer.data.failures
+          ? JSON.stringify(transfer.data.failures)
+          : null
       });
       if (settleError) throw settleError;
     }

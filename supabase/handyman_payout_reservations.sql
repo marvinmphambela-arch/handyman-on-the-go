@@ -130,6 +130,8 @@ begin
   where e.handyman_id = v_handyman_id
     and e.payment_method = 'platform'
     and e.status in ('held','available')
+    and e.available_at is not null
+    and e.available_at <= now()
     and cp.status = 'paid'
     and j.status::text = 'completed'
     and e.net_earnings_zar > e.paid_out_zar + e.payout_reserved_zar;
@@ -175,6 +177,8 @@ begin
     where e.handyman_id = v_handyman_id
       and e.payment_method = 'platform'
       and e.status in ('held','available')
+      and e.available_at is not null
+      and e.available_at <= now()
       and cp.status = 'paid'
       and j.status = 'completed'::public.job_status
       and e.net_earnings_zar > e.paid_out_zar + e.payout_reserved_zar
