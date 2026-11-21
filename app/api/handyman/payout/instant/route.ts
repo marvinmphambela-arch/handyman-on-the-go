@@ -140,11 +140,13 @@ export async function POST(request: Request) {
       }
 
       const savedRecipientCode = pending.paystack_recipient_code_snapshot as string | null;
-      if (savedRecipientCode) recipientCode = savedRecipientCode;
-      expectedRecipientCode = recipientCode;
-      if (!recipientCode) {
-        throw new Error("The saved payout recipient is unavailable. Please contact support.");
+      if (!savedRecipientCode) {
+        throw new Error("The original payout recipient is not recorded for this withdrawal. Please contact support before retrying.");
       }
+      // Recovery must use only the recipient saved with the original request.
+      // Never fall back to the handyman's current bank account.
+      recipientCode = savedRecipientCode;
+      expectedRecipientCode = savedRecipientCode;
 
       payoutRequestId = pending.id;
       grossAmountZar = Number(pending.gross_amount_zar);
