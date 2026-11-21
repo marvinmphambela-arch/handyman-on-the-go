@@ -115,3 +115,11 @@ export async function initiateSouthAfricaTransfer(input: {
     })
   });
 }
+
+
+export async function finalizeSouthAfricaTransfer(input: { transferCode: string; otp: string }) {
+  return paystackRequest<PaystackTransferResponse>("/transfer/finalize_transfer", {
+    method: "POST",
+    body: JSON.stringify({ transfer_code: input.transferCode, otp: input.otp })
+  });
+}
