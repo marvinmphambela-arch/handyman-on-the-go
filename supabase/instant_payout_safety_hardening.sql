@@ -1,5 +1,6 @@
 -- Instant payout safety hardening.
 -- Apply after handyman_wallet_earnings_foundation.sql,
+-- handyman_weekly_earnings_cycle.sql,
 -- handyman_payout_history_and_bank_accounts.sql, and
 -- handyman_payout_reservations.sql. Apply this after any legacy
 -- instant_withdrawal_rpc_auth_fix.sql / shared_handyman_withdrawable_earnings.sql.
