@@ -298,7 +298,8 @@ declare
   v_earning public.handyman_earnings%rowtype;
   v_allocated bigint;
 begin
-  if p_transfer_status not in ('success', 'failed', 'reversed') then
+  if p_transfer_status is null
+     or p_transfer_status not in ('success', 'failed', 'reversed') then
     raise exception 'Transfer status is not conclusive.';
   end if;
 
