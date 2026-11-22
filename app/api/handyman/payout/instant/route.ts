@@ -151,7 +151,14 @@ export async function POST(request: Request) {
       payoutRequestId = pending.id;
       grossAmountZar = Number(pending.gross_amount_zar);
       feeAmountZar = Number(pending.fee_amount_zar);
-      netAmountKobo = Math.round(Number(pending.net_amount_zar) * 100);
+      // Convert the database decimal string to cents without relying on binary
+      // floating-point rounding.
+      const netAmount = String(pending.net_amount_zar);
+      const [whole = "0", fraction = ""] = netAmount.split(".");
+      if (!/^\d+$/.test(whole) || !/^\d{0,2}$/.test(fraction)) {
+        throw new Error("Saved payout amount is not a valid ZAR decimal.");
+      }
+      netAmountKobo = Number(whole) * 100 + Number(fraction.padEnd(2, "0"));
     } else {
       // This reservation RPC derives the handyman from auth.uid(), so it
       // must run with the authenticated user's session, not service_role.
@@ -166,7 +173,8 @@ export async function POST(request: Request) {
       payoutRequestId = payout?.payout_request_id;
       grossAmountZar = Number(payout?.gross_amount_zar);
       feeAmountZar = Number(payout?.fee_amount_zar);
-      netAmountKobo = Math.round(Number(payout?.net_amount_zar) * 100);
+      // Prefer the exact integer-kobo value returned by the reservation RPC.
+      netAmountKobo = Number(payout?.net_amount_kobo);
     }
 
     if (typeof payoutRequestId !== "string"
@@ -232,6 +240,22 @@ export async function POST(request: Request) {
     }
 
     const transferStatus = transfer.data.status;
+
+    // Persist the Paystack transfer code and current state, especially "otp",
+    // so the same reserved payout can be recovered by the authorised admin flow.
+    // Never store or log the OTP itself.
+    const transferCode = transfer.data.transfer_code;
+    const { error: transferStateError } = await admin
+      .from("handyman_payout_requests")
+      .update({
+        transfer_code: transferCode || null,
+        transfer_status: transferStatus
+      })
+      .eq("id", payoutRequestId)
+      .eq("transfer_reference", reference)
+      .eq("status", "processing");
+    if (transferStateError) throw transferStateError;
+
     if (transferStatus === "success" || transferStatus === "failed" || transferStatus === "reversed") {
       const { error: settleError } = await admin.rpc("settle_handyman_payout", {
         p_transfer_reference: reference,
