@@ -1,4 +1,9 @@
 -- Instant payout safety hardening.
+-- Apply after handyman_wallet_earnings_foundation.sql,
+-- handyman_payout_history_and_bank_accounts.sql, and
+-- handyman_payout_reservations.sql. Apply this after any legacy
+-- instant_withdrawal_rpc_auth_fix.sql / shared_handyman_withdrawable_earnings.sql.
+-- Removes the obsolete UUID-argument payout RPC; the app calls the integer-only RPC.
 -- Keeps the agreed 2% fee / R5 minimum and does not initiate transfers.
 begin;
 
@@ -44,6 +49,10 @@ $$;
 
 revoke all on function public.get_handyman_withdrawable_earnings(uuid)
   from public, anon, authenticated;
+
+-- The application calls this function with only p_amount_zar. The former
+-- (uuid, integer) overload is no longer used; do not CASCADE if dependencies exist.
+drop function if exists public.request_instant_handyman_payout(uuid, integer);
 
 -- Creates an instant-withdrawal request and atomically reserves the exact earnings
 -- behind it. Only verified platform-paid, completed jobs are eligible.
