@@ -4,6 +4,16 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 
+function zarToKobo(value: unknown): number | null {
+  const amount = String(value ?? "");
+  const match = /^(\\d+)(?:\\.(\\d{1,2}))?$/.exec(amount);
+  if (!match) return null;
+  const whole = Number(match[1]);
+  const fraction = Number((match[2] ?? "").padEnd(2, "0"));
+  const kobo = whole * 100 + fraction;
+  return Number.isSafeInteger(kobo) ? kobo : null;
+}
+
 export async function POST(request: Request) {
   console.info("Paystack webhook request received.");
   const paymentSecret = process.env.PAYSTACK_SECRET_KEY;
@@ -72,7 +82,9 @@ export async function POST(request: Request) {
         ? transfer.recipient.recipient_code
         : null;
 
-      if (amount !== payout.net_amount_zar * 100
+      const expectedAmountKobo = zarToKobo(payout.net_amount_zar);
+      if (expectedAmountKobo === null
+          || amount !== expectedAmountKobo
           || !payout.paystack_recipient_code_snapshot
           || eventRecipientCode !== payout.paystack_recipient_code_snapshot) {
         console.warn("Paystack transfer webhook ignored: amount did not match payout.", { reference });
