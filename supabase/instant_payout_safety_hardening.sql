@@ -26,14 +26,18 @@ as $$
     greatest(e.net_earnings_zar - e.paid_out_zar - e.payout_reserved_zar, 0)::integer,
     e.completed_at
   from public.handyman_earnings e
-  join public.customer_job_payments cp on cp.job_id = e.job_id
   join public.jobs j on j.id = e.job_id
   where e.handyman_id = p_handyman_id
     and e.payment_method = 'platform'
     and e.status in ('held', 'available')
     and e.available_at is not null
     and e.available_at <= now()
-    and cp.status = 'paid'
+    and exists (
+      select 1
+      from public.customer_job_payments cp
+      where cp.job_id = e.job_id
+        and cp.status = 'paid'
+    )
     and j.status::text = 'completed'
     and e.net_earnings_zar > e.paid_out_zar + e.payout_reserved_zar;
 $$;
@@ -74,6 +78,12 @@ begin
     raise exception 'Enter a valid withdrawal amount.';
   end if;
 
+  -- Serialize payout creation per handyman. This protects the pending-request
+  -- check and balance calculation even when two requests arrive simultaneously.
+  perform pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended(v_handyman_id::text, 0)
+  );
+
   select * into v_bank
   from public.handyman_bank_accounts
   where handyman_id = v_handyman_id and is_active = true
@@ -88,6 +98,11 @@ begin
   from public.platform_financial_settings
   where id = true;
 
+  if v_fee_percent is null or v_minimum_fee is null
+     or v_fee_percent < 0 or v_minimum_fee < 0 then
+    raise exception 'Instant withdrawal pricing is not configured correctly.';
+  end if;
+
   if exists (
     select 1 from public.handyman_payout_requests
     where handyman_id = v_handyman_id
@@ -101,14 +116,18 @@ begin
   ), 0)
     into v_eligible
   from public.handyman_earnings e
-  join public.customer_job_payments cp on cp.job_id = e.job_id
   join public.jobs j on j.id = e.job_id
   where e.handyman_id = v_handyman_id
     and e.payment_method = 'platform'
     and e.status in ('held','available')
     and e.available_at is not null
     and e.available_at <= now()
-    and cp.status = 'paid'
+    and exists (
+      select 1
+      from public.customer_job_payments cp
+      where cp.job_id = e.job_id
+        and cp.status = 'paid'
+    )
     and j.status::text = 'completed'
     and e.net_earnings_zar > e.paid_out_zar + e.payout_reserved_zar;
 
@@ -140,21 +159,25 @@ begin
   )
   returning id into v_request_id;
 
-  -- Lock and reserve earnings oldest-first. The unique earning index prevents
-  -- a second payout request from reserving the same earning concurrently.
+  -- Lock and reserve eligible earnings oldest-first. The per-handyman advisory
+  -- lock above serializes competing payout requests before this allocation.
   for v_earning in
     select e.id,
            greatest(e.net_earnings_zar - e.paid_out_zar - e.payout_reserved_zar, 0) as remaining
     from public.handyman_earnings e
-    join public.customer_job_payments cp on cp.job_id = e.job_id
     join public.jobs j on j.id = e.job_id
     where e.handyman_id = v_handyman_id
       and e.payment_method = 'platform'
       and e.status in ('held','available')
       and e.available_at is not null
       and e.available_at <= now()
-      and cp.status = 'paid'
-      and j.status = 'completed'::public.job_status
+      and exists (
+        select 1
+        from public.customer_job_payments cp
+        where cp.job_id = e.job_id
+          and cp.status = 'paid'
+      )
+      and j.status::text = 'completed'
       and e.net_earnings_zar > e.paid_out_zar + e.payout_reserved_zar
     order by e.completed_at, e.id
     for update
