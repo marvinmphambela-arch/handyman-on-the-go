@@ -248,7 +248,7 @@ export async function POST(request: Request) {
     const { error: transferStateError } = await admin
       .from("handyman_payout_requests")
       .update({
-        transfer_code: transferCode || null,
+        ...(transferCode ? { transfer_code: transferCode } : {}),
         transfer_status: transferStatus
       })
       .eq("id", payoutRequestId)
