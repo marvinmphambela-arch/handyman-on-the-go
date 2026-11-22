@@ -78,6 +78,6 @@ select
     ) as reservation_columns_ready,
   exists (
     select 1 from pg_constraint
-    where conrelid = 'public.handyman_earnings'::regclass
+    where conrelid = to_regclass('public.handyman_earnings')
       and conname = 'handyman_earnings_payout_amounts_check'
   ) as reservation_balance_constraint_ready;
