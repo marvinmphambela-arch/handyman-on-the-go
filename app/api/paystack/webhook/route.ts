@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 function zarToKobo(value: unknown): number | null {
   const amount = String(value ?? "");
-  const match = /^(\\d+)(?:\\.(\\d{1,2}))?$/.exec(amount);
+  const match = /^(\d+)(?:\.(\d{1,2}))?$/.exec(amount);
   if (!match) return null;
   const whole = Number(match[1]);
   const fraction = Number((match[2] ?? "").padEnd(2, "0"));
