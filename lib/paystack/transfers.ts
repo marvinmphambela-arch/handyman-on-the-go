@@ -77,8 +77,25 @@ export type PaystackTransferResponse = {
     currency: string;
     status: "pending" | "success" | "otp" | "failed" | "reversed" | string;
     failures?: unknown;
+    recipient?: {
+      recipient_code?: string;
+    } | number;
   };
 };
+
+export async function verifySouthAfricaTransfer(reference: string) {
+  try {
+    return await paystackRequest<PaystackTransferResponse>(
+      `/transfer/verify/${encodeURIComponent(reference)}`,
+      { method: "GET" }
+    );
+  } catch (error) {
+    // A 404 means Paystack has no transfer for this reference. Other errors
+    // remain errors so an outage is never mistaken for permission to retry.
+    if ((error as Error & { status?: number }).status === 404) return null;
+    throw error;
+  }
+}
 
 export async function initiateSouthAfricaTransfer(input: {
   amountKobo: number;
@@ -96,5 +113,13 @@ export async function initiateSouthAfricaTransfer(input: {
       reference: input.reference,
       reason: input.reason
     })
+  });
+}
+
+
+export async function finalizeSouthAfricaTransfer(input: { transferCode: string; otp: string }) {
+  return paystackRequest<PaystackTransferResponse>("/transfer/finalize_transfer", {
+    method: "POST",
+    body: JSON.stringify({ transfer_code: input.transferCode, otp: input.otp })
   });
 }

@@ -4,16 +4,29 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 
+function zarToKobo(value: unknown): number | null {
+  const amount = String(value ?? "");
+  const match = /^(\d+)(?:\.(\d{1,2}))?$/.exec(amount);
+  if (!match) return null;
+  const whole = Number(match[1]);
+  const fraction = Number((match[2] ?? "").padEnd(2, "0"));
+  const kobo = whole * 100 + fraction;
+  return Number.isSafeInteger(kobo) ? kobo : null;
+}
+
 export async function POST(request: Request) {
   console.info("Paystack webhook request received.");
   const paymentSecret = process.env.PAYSTACK_SECRET_KEY;
   const transferSecret = process.env.PAYSTACK_TRANSFER_SECRET_KEY;
   if (!paymentSecret && !transferSecret) {
-    console.error("Paystack webhook is not configured: no secret key is present.");
+    console.error("Paystack webhook is not configured: no API secret key is present.");
     return NextResponse.json({ error: "Webhook is not configured." }, { status: 503 });
   }
 
   const rawBody = await request.text();
+
+  // This Paystack dashboard currently exposes the legacy webhook signature
+  // flow only. Verify X-Paystack-Signature against the configured API secret.
   const signature = request.headers.get("x-paystack-signature");
   if (!signature || !/^[a-f0-9]{128}$/i.test(signature)) {
     console.warn("Paystack webhook rejected: signature header is missing or malformed.");
@@ -27,7 +40,7 @@ export async function POST(request: Request) {
     return supplied.length === expected.length && timingSafeEqual(supplied, expected);
   });
   if (!validSignature) {
-    console.warn("Paystack webhook rejected: signature did not match configured secret keys.");
+    console.warn("Paystack webhook rejected: signature did not match configured API secret keys.");
     return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
   }
   console.info("Paystack webhook signature verified.");
@@ -52,7 +65,7 @@ export async function POST(request: Request) {
 
       const { data: payout, error: payoutLookupError } = await admin
         .from("handyman_payout_requests")
-        .select("id, net_amount_zar, status, transfer_reference")
+        .select("id, net_amount_zar, status, transfer_reference, paystack_recipient_code_snapshot")
         .eq("transfer_reference", reference)
         .maybeSingle();
 
@@ -63,7 +76,17 @@ export async function POST(request: Request) {
       }
 
       // Paystack amounts are in the currency subunit. For ZAR that is cents.
-      if (amount !== payout.net_amount_zar * 100) {
+      // Require the event to identify the exact saved recipient as well.
+      const eventRecipientCode = typeof transfer?.recipient === "object"
+        && transfer.recipient !== null
+        ? transfer.recipient.recipient_code
+        : null;
+
+      const expectedAmountKobo = zarToKobo(payout.net_amount_zar);
+      if (expectedAmountKobo === null
+          || amount !== expectedAmountKobo
+          || !payout.paystack_recipient_code_snapshot
+          || eventRecipientCode !== payout.paystack_recipient_code_snapshot) {
         console.warn("Paystack transfer webhook ignored: amount did not match payout.", { reference });
         return NextResponse.json({ received: true });
       }
@@ -73,10 +96,19 @@ export async function POST(request: Request) {
         "transfer.failed": "failed",
         "transfer.reversed": "reversed"
       };
+      const eventStatus = statusMap[event.event];
+      if (transfer?.status !== eventStatus) {
+        console.warn("Paystack transfer webhook ignored: event name and transfer status disagree.", {
+          reference,
+          event: event.event,
+          transferStatus: transfer?.status
+        });
+        return NextResponse.json({ received: true });
+      }
 
       const { error: settleError } = await admin.rpc("settle_handyman_payout", {
         p_transfer_reference: reference,
-        p_transfer_status: statusMap[event.event],
+        p_transfer_status: eventStatus,
         p_failure_reason: typeof transfer?.failures === "string"
           ? transfer.failures
           : transfer?.failures ? JSON.stringify(transfer.failures) : null
